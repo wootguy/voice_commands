@@ -84,19 +84,24 @@ bool g_monster_reactions = true;
 bool g_enable_sprites = true;
 uint g_command_delay = 2500;
 bool debug_mode = false;
+bool debug_log = false;
 string default_voice = 'Scientist';
 string plugin_path = 'scripts/plugins/voice_commands/';
 // All possible sound channels we can use
-array<SOUND_CHANNEL> channels = {CHAN_ITEM, CHAN_VOICE, CHAN_STATIC, CHAN_BODY, CHAN_STREAM, CHAN_WEAPON, CHAN_NETWORKVOICE_BASE, CHAN_AUTO};
-	
+array<SOUND_CHANNEL> channels = {CHAN_STATIC, CHAN_VOICE, CHAN_STREAM, CHAN_BODY, CHAN_ITEM, CHAN_NETWORKVOICE_BASE, CHAN_AUTO, CHAN_WEAPON};
+
+void print(string text) { g_Game.AlertMessage( at_console, "VoiceCommands: " + text); }
+void println(string text) { print(text + "\n"); }
+void printSuccess() { g_Game.AlertMessage( at_console, "SUCCESS\n"); }
 
 void PluginInit()
 {
 	g_Module.ScriptInfo.SetAuthor( "w00tguy" );
 	g_Module.ScriptInfo.SetContactInfo( "w00tguy123 - forums.svencoop.com" );
 	g_Hooks.RegisterHook( Hooks::Player::ClientSay, @ClientSay );	
+	g_Hooks.RegisterHook( Hooks::Game::MapChange, @MapChange );
 	
-	loadConfig();
+	loadConfig();		
 	loadVoiceData();
 }
 
@@ -110,7 +115,7 @@ void MapInit()
 	if (g_enable_sprites)
 		for (uint i = 0; i < g_commands.length(); i++)
 			g_Game.PrecacheModel(g_commands[i].sprite);
-		
+	
 	// Reset temporary vars on map change
 	array<string>@ states = player_states.getKeys();
 	for (uint i = 0; i < states.length(); i++)
@@ -119,7 +124,23 @@ void MapInit()
 		state.lastChatTime = 0;
 		state.lastChatMenu = 0;
 		state.globalInvert = 0;
+		state.lastSample = "";
+		state.lastPhraseId = -1;
 	}
+}
+
+HookReturnCode MapChange()
+{
+	// set all menus to null. Apparently this fixes crashes for some people:
+	// http://forums.svencoop.com/showthread.php/43310-Need-help-with-text-menu#post515087
+	array<string>@ stateKeys = player_states.getKeys();
+	for (uint i = 0; i < stateKeys.length(); i++)
+	{
+		PlayerState@ state = cast<PlayerState@>( player_states[stateKeys[i]] );
+		if (state.menu !is null)
+			@state.menu = null;
+	}
+	return HOOK_CONTINUE;
 }
 
 enum parse_mode {
@@ -337,6 +358,10 @@ int g_idx = 0; // debug
 // handles player voice chats
 void voiceMenuCallback(CTextMenu@ menu, CBasePlayer@ plr, int page, const CTextMenuItem@ item)
 {
+	if (item is null or plr is null) {
+		return;
+	}
+
 	PlayerState@ state = getPlayerState(plr);
 
 	state.lastChatMenu = 0;	// return chat menu to normal order
@@ -412,8 +437,9 @@ void voiceMenuCallback(CTextMenu@ menu, CBasePlayer@ plr, int page, const CTextM
 		gain = 1;
 	
 	// Stop the last sound file in case its still playing
-	for (uint i = 0; i < channels.length(); i++)
-		g_SoundSystem.StopSound(plr.edict(), channels[i], state.lastSample, false);
+	if (state.lastSample.Length() > 0)
+		for (uint i = 0; i < channels.length(); i++)
+			g_SoundSystem.StopSound(plr.edict(), channels[i], state.lastSample, false);
 	
 	if (global) 
 	{
@@ -430,6 +456,7 @@ void voiceMenuCallback(CTextMenu@ menu, CBasePlayer@ plr, int page, const CTextM
 		array<CBaseEntity@> ambients;
 		for (uint g = 0; g < gain; g++)
 			ambients.insertLast( g_EntityFuncs.CreateEntity( "ambient_generic", keyvalues, true ) );
+		
 		g_EntityFuncs.FireTargets(ambientName, null, null, USE_ON);
 		
 		// delete the entities we just created
@@ -451,10 +478,13 @@ void voiceMenuCallback(CTextMenu@ menu, CBasePlayer@ plr, int page, const CTextM
 		g_PlayerFuncs.SayTextAll(plr, "(voice) " + plr.pev.netname + ": " + phraseId + "\n");
 	
 	// Get the command sprite
-	if (g_enable_sprites)
+	if (g_enable_sprites) {
 		for (uint i = 0; i < g_commands.length(); i++)
 			if (g_commands[i].name == phraseId)
 				plr.ShowOverheadSprite(g_commands[i].sprite, 51.0f, (g_command_delay / 1000.0f));
+	}
+	
+	
 	
 	// Monster reactions to sounds
 	if (g_monster_reactions)
@@ -462,6 +492,7 @@ void voiceMenuCallback(CTextMenu@ menu, CBasePlayer@ plr, int page, const CTextM
 		GetSoundEntInstance().InsertSound(4, plr.pev.origin, NORMAL_GUN_VOLUME, 0, plr); // let monsters respond to this sound
 		
 		CBaseMonster@ target = getMonsterLookingAt(plr, 512.0f);
+		
 		if ( target !is null ) // Looking at a monster that is within earshot
 		{
 			g_Scheduler.SetTimeout( "triggerMonsterAction", 1, @target, @plr, phraseId );
@@ -475,6 +506,9 @@ void voiceMenuCallback(CTextMenu@ menu, CBasePlayer@ plr, int page, const CTextM
 // handles player voice selection
 void voiceSelectCallback(CTextMenu@ menu, CBasePlayer@ plr, int page, const CTextMenuItem@ item)
 {
+	if (item is null or plr is null) {
+		return;
+	}
 	PlayerState@ state = getPlayerState(plr);
 	state.talker_id = item.szUserData;
 	g_PlayerFuncs.SayText(plr, "Your voice has been set to " + item.szName + "\n");
@@ -482,7 +516,7 @@ void voiceSelectCallback(CTextMenu@ menu, CBasePlayer@ plr, int page, const CTex
 
 // Will create a new state if the requested one does not exit
 PlayerState@ getPlayerState(CBasePlayer@ plr)
-{
+{	
 	string steamId = g_EngineFuncs.GetPlayerAuthId( plr.edict() );
 	if (steamId == 'STEAM_ID_LAN') {
 		steamId = plr.pev.netname;
@@ -497,7 +531,6 @@ PlayerState@ getPlayerState(CBasePlayer@ plr)
 		state.pitch = 100;
 		state.lastChatTime = 0;
 		player_states[steamId] = state;
-		g_Game.AlertMessage( at_console, "Got new steam id " + steamId + "\n");
 	}
 	return cast<PlayerState@>( player_states[steamId] );
 }
@@ -546,13 +579,12 @@ void openChatMenu(PlayerState@ state, CBasePlayer@ plr, int menuId, bool global)
 		state.lastChatMenu = menuId;
 		state.globalInvert = 0;
 	}
-	
-	
+
 	state.openMenu(plr);
 }
 
 HookReturnCode ClientSay( SayParameters@ pParams )
-{
+{	
 	CBasePlayer@ plr = pParams.GetPlayer();
 	const CCommand@ args = pParams.GetArguments();
 	
@@ -594,7 +626,7 @@ HookReturnCode ClientSay( SayParameters@ pParams )
 				return HOOK_HANDLED;
 			}
 			if ( args[1] == "pitch" and args.ArgC() > 2 )
-			{			
+			{		
 				int newPitch = atoi( args[2] );
 				if (newPitch < 1)
 					newPitch = 1;
