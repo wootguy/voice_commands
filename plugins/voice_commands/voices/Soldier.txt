@@ -1,0 +1,107 @@
+[Yes]
+2 : fgrunt/roger.wav
+2 : fgrunt/sir.wav
+2 : fgrunt/siryessir.wav
+2 : fgrunt/yes.wav
+
+[No]
+2 : fgrunt/no.wav
+
+[Hello]
+2 : fgrunt/hellosir.wav
+2 : fgrunt/of5a1_fg01.wav
+2 : fgrunt/tosee.wav
+
+[Cheer]
+2 : fgrunt/corporal.wav
+2 : fgrunt/now.wav
+2 : fgrunt/sniper.wav
+2 : fgrunt/talking.wav
+3 : voice_commands/fgrunt/cheer1.ogg
+3 : voice_commands/fgrunt/cheer2.ogg
+2 : voice_commands/fgrunt/cheer3.ogg
+2 : voice_commands/fgrunt/cheer4.ogg
+
+[Follow me]
+2 : fgrunt/go.wav
+2 : fgrunt/move.wav
+2 : fgrunt/moveup.wav
+2 : fgrunt/of6a1_fg02.wav
+2 : fgrunt/rapidfire.wav
+2 : fgrunt/recon.wav
+2 : fgrunt/marines.wav
+
+[I'm with you]
+2 : fgrunt/command.wav
+2 : fgrunt/damage.wav
+2 : fgrunt/gotit.wav
+2 : fgrunt/notfail.wav
+2 : fgrunt/scout.wav
+2 : fgrunt/six.wav
+
+[Thanks]
+2 : fgrunt/of2a5_fg04.wav
+2 : fgrunt/thanks.wav
+
+[You're welcome]
+2 : voice_commands/fgrunt/welcome1.ogg
+2 : fgrunt/tag.wav
+
+[Help]
+2 : fgrunt/backup.wav
+2 : voice_commands/fgrunt/help1.ogg
+
+[Sorry]
+2 : voice_commands/fgrunt/sorry1.ogg
+2 : fgrunt/situations.wav
+
+[Chit-chat]
+2 : fgrunt/babysitting.wav
+2 : fgrunt/bfeeling.wav
+2 : fgrunt/charge.wav
+2 : fgrunt/chicken.wav
+2 : fgrunt/coverup.wav
+2 : fgrunt/current.wav
+2 : fgrunt/disney.wav
+2 : fgrunt/dogs.wav
+2 : fgrunt/feel.wav
+2 : fgrunt/fubar.wav
+2 : fgrunt/lost.wav
+2 : fgrunt/mission.wav
+2 : fgrunt/oneshot.wav
+2 : fgrunt/seensquad.wav
+2 : fgrunt/short.wav
+
+[Taunt]
+2 : fgrunt/killer.wav
+2 : fgrunt/nothing.wav
+2 : fgrunt/mister.wav
+2 : fgrunt/take.wav
+2 : fgrunt/wantsome.wav
+2 : fgrunt/freaks.wav
+2 : fgrunt/getsome.wav
+
+[Run away]
+2 : fgrunt/cover.wav
+2 : fgrunt/down.wav
+2 : fgrunt/hellout.wav
+2 : fgrunt/retreat.wav
+2 : fgrunt/incoming.wav
+
+[Stop]
+2 : fgrunt/watchit.wav
+2 : fgrunt/checkfire.wav
+
+[Dead]
+2 : fgrunt/death1.wav
+2 : fgrunt/death2.wav
+2 : fgrunt/death3.wav
+2 : fgrunt/death4.wav
+2 : fgrunt/death5.wav
+2 : fgrunt/death6.wav
+2 : fgrunt/gr_pain1.wav
+2 : fgrunt/gr_pain2.wav
+2 : fgrunt/gr_pain3.wav
+2 : fgrunt/gr_pain4.wav
+2 : fgrunt/gr_pain5.wav
+2 : fgrunt/gr_pain6.wav

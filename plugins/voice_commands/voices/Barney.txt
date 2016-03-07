@@ -1,0 +1,133 @@
+[Yes]
+2 : barney/ba_ok0.wav
+5 : barney/iguess.wav
+5 : barney/soundsright.wav
+5 : barney/yessir.wav
+5 : barney/yup.wav
+
+[No]
+5 : barney/dontguess.wav
+5 : barney/icanhear.wav
+5 : barney/nope.wav
+4 : barney/nosir.wav
+5 : barney/noway.wav
+
+[Hello]
+2 : barney/ba_hello3.wav
+2 : barney/ba_hello5.wav
+2 : barney/ba_stare1.wav
+4 : barney/haybuddy.wav
+3 : barney/hellonicesuit.wav
+4 : barney/howyoudoing.wav
+
+[Cheer]
+3 : barney/ba_another.wav
+3 : barney/ba_generic2.wav
+3 : barney/ba_gotone.wav
+3 : barney/ba_kill1.wav
+3 : barney/ba_seethat.wav
+
+[Follow me]
+2 : barney/ba_ht07_02.wav
+3 : barney/ba_lead0.wav
+2 : barney/ba_lead1.wav
+2 : barney/ba_lead2.wav
+4 : barney/ba_stare2.wav
+
+[I'm with you]
+4 : barney/ba_idle1.wav
+3 : barney/ba_ok2.wav
+2 : barney/ba_ok3.wav
+4 : barney/ba_ok5.wav
+2 : barney/ba_stare3.wav
+4 : barney/dobettertogether.wav
+3 : barney/letsgo.wav
+4 : barney/teamup2.wav
+
+[Thanks]
+2 : barney/ba_later.wav
+
+[You're welcome]
+3 : barney/yougotit.wav
+4 : barney/youbet.wav
+
+[Help]
+2 : barney/ba_needhelp0.wav
+4 : barney/ba_needhelp1.wav
+4 : voice_commands/barney/help1.ogg
+
+[Sorry]
+3 : voice_commands/barney/sorry1.ogg
+4 : voice_commands/barney/sorry2.ogg
+4 : voice_commands/barney/sorry3.ogg
+2 : voice_commands/barney/sorry4.ogg
+
+[Chit-chat]
+2 : barney/ba_hello4.wav
+2 : barney/ba_ht01_03.wav
+2 : barney/ba_ht07_19.wav
+2 : barney/ba_idle0.wav
+2 : barney/ba_idle6.wav
+2 : barney/ba_internet.wav
+2 : barney/ba_mad3.wav
+3 : barney/badarea.wav
+3 : barney/badfeeling.wav
+3 : barney/beertopside.wav
+2 : barney/bigmess.wav
+3 : barney/bigplace.wav
+3 : barney/coldone.wav
+3 : barney/crewdied.wav
+2 : barney/getanyworse.wav
+2 : barney/gladof38.wav
+3 : barney/guyresponsible.wav
+2 : barney/luckwillturn.wav
+2 : barney/nodrill.wav
+2 : barney/of1a5_ba01.wav
+2 : barney/somethingdied.wav
+3 : barney/somethingmoves.wav
+3 : barney/soundsbad.wav
+2 : barney/survive.wav
+3 : barney/targetpractice.wav
+2 : barney/workingonstuff.wav
+2 : barney/youeverseen.wav
+
+[Taunt]
+2 : barney/aintscared.wav
+4 : barney/ba_buttugly.wav
+2 : barney/ba_endline.wav
+4 : barney/ba_friends.wav
+2 : barney/ba_mad0.wav
+2 : barney/ba_mad2.wav
+2 : barney/ba_bring.wav
+2 : barney/ba_tomb.wav
+4 : barney/ba_uwish.wav
+3 : barney/ba_iwish.wav
+2 : barney/ba_whatyou.wav
+2 : barney/c1a4_ba_octo1.wav
+2 : barney/c1a4_ba_octo4.wav
+2 : barney/c2a4_ba_arg1a.wav
+2 : barney/diebloodsucker.wav
+2 : barney/easily.wav
+4 : barney/youtalkmuch.wav
+3 : barney/ba_somuch.wav
+2 : barney/ba_stepoff.wav
+
+[Run away]
+2 : barney/aghh.wav
+2 : barney/die.wav
+2 : barney/hey.wav
+
+[Stop]
+2 : barney/ba_crazy.wav
+2 : barney/ba_generic0.wav
+2 : barney/ba_power4.wav
+2 : barney/donthurtem.wav
+
+[Dead]
+2 : barney/ba_die1.wav
+2 : barney/ba_die2.wav
+2 : barney/ba_die3.wav
+2 : barney/ba_ht06_02.wav
+2 : barney/ba_ht06_02_alt.wav
+2 : barney/ba_pain2.wav
+2 : barney/ba_pain3.wav

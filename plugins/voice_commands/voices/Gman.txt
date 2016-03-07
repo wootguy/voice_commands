@@ -1,0 +1,63 @@
+[Yes]
+3 : gman/of7a0_gm02.wav
+5 : voice_commands/gman/yes1.ogg
+
+[No]
+4 : voice_commands/gman/no1.ogg
+3 : voice_commands/gman/no2.ogg
+
+[Hello]
+4 : voice_commands/gman/hello1.ogg
+3 : voice_commands/gman/hello2.ogg
+
+[Cheer]
+3 : voice_commands/gman/cheer1.ogg
+3 : voice_commands/gman/cheer2.ogg
+6 : voice_commands/gman/cheer3.ogg
+
+[Follow me]
+4 : voice_commands/gman/follow1.ogg
+
+[I'm with you]
+4 : voice_commands/gman/withyou1.ogg
+
+[Thanks]
+3 : voice_commands/gman/thanks1.ogg
+3 : voice_commands/gman/thanks2.ogg
+
+[You're welcome]
+6 : voice_commands/gman/welcome1.ogg
+
+[Help]
+3 : voice_commands/gman/help1.ogg
+3 : voice_commands/gman/help2.ogg
+
+[Sorry]
+3 : voice_commands/gman/sorry1.ogg
+3 : voice_commands/gman/sorry2.ogg
+4 : voice_commands/gman/sorry3.ogg
+
+[Chit-chat]
+3 : voice_commands/gman/chat1.ogg
+3 : voice_commands/gman/chat2.ogg
+3 : voice_commands/gman/chat3.ogg
+3 : voice_commands/gman/chat4.ogg
+3 : voice_commands/gman/chat5.ogg
+
+[Taunt]
+3 : gman/gman_noreg.wav
+3 : gman/gman_choose1.wav
+3 : gman/gman_choose2.wav
+
+[Run away]
+3 : voice_commands/gman/run1.ogg
+
+[Stop]
+3 : gman/gman_nowork.wav
+3 : voice_commands/gman/stop1.ogg
+
+[Dead]
+3 : voice_commands/gman/die1.ogg
+3 : voice_commands/gman/die2.ogg
+3 : voice_commands/gman/die3.ogg
+3 : voice_commands/gman/die4.ogg
