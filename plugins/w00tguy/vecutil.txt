@@ -1,0 +1,75 @@
+array<float> rotationMatrix(Vector axis, float angle)
+{
+	axis = axis.Normalize();
+    float s = sin(angle);
+    float c = cos(angle);
+    float oc = 1.0 - c;
+ 
+	array<float> mat = {
+		oc * axis.x * axis.x + c,          oc * axis.x * axis.y - axis.z * s, oc * axis.z * axis.x + axis.y * s, 0.0,
+		oc * axis.x * axis.y + axis.z * s, oc * axis.y * axis.y + c,          oc * axis.y * axis.z - axis.x * s, 0.0,
+		oc * axis.z * axis.x - axis.y * s, oc * axis.y * axis.z + axis.x * s, oc * axis.z * axis.z + c,			 0.0,
+		0.0,                               0.0,                               0.0,								 1.0
+	};
+	return mat;
+}
+
+// multiply a matrix with a vector (assumes w component of vector is 1.0f) 
+Vector matMultVector(array<float> rotMat, Vector v)
+{
+	Vector outv;
+	outv.x = rotMat[0]*v.x + rotMat[4]*v.y + rotMat[8]*v.z  + rotMat[12];
+	outv.y = rotMat[1]*v.x + rotMat[5]*v.y + rotMat[9]*v.z  + rotMat[13];
+	outv.z = rotMat[2]*v.x + rotMat[6]*v.y + rotMat[10]*v.z + rotMat[14];
+	return outv;
+}
+
+// adjust vector length
+Vector normalizeVector( Vector v, float length )
+{
+	float d = length / sqrt( (v.x*v.x) + (v.y*v.y) + (v.z*v.z) );
+	v.x *= d;
+	v.y *= d;
+	v.z *= d;
+	return v;
+}
+
+
+
+
+{
+	// Next we need to adjust the "pitch" of the velocity vector at the new yaw.
+				// Chances are, the new velocity isn't perfectly aligned with the X or Y axis,
+				// so we need to rotate the velocity vector around an arbitrary axis.
+				
+				// Figure out the axis we want to rotate around
+				// (perpindicular to the looking direction and the velocity
+				Vector newLookDir = Math.RotateVector(Vector(1, 0, 0), plr.pev.v_angle, Vector(0,0,0));
+				float speed = plr.pev.velocity.Length();
+				Vector velDir = plr.pev.velocity.Normalize();
+				println("DIR: " + velDir.x + " " + velDir.y + " " + velDir.z);
+				Vector rotVector = CrossProduct(newLookDir, velDir);
+				
+				// Rotate the velocity with a rotation matrix.
+				float angle = Math.DegreesToRadians(plr.pev.v_angle.x - exit.angles.x); // pitch adjustment
+				array<float> rotMat = rotationMatrix(rotVector, angle); // matrix representation of the transformation we want to apply
+				velDir = matMultVector(rotMat, velDir); // apply the rotation
+				
+				// Rotate the velocity vector to correct yaw
+				Vector angleDiff = Vector(0,0,0);
+				angleDiff.y = exit.angles.y - plr.pev.v_angle.y;
+				println("YAW CHANGE: " + angleDiff.y);
+				plr.pev.velocity = Math.RotateVector(plr.pev.velocity, angleDiff, Vector(0,0,0));
+				
+				// restore the original speed
+				velDir = normalizeVector(velDir, speed);
+				plr.pev.velocity = velDir;
+				
+				
+				println("PITCH CHANGE: " + (plr.pev.v_angle.x - exit.angles.x));
+				println("NEW VEL: " + plr.pev.velocity.x + " " + plr.pev.velocity.y + " " + plr.pev.velocity.z);
+				
+				plr.pev.angles = exit.angles;
+			
+				//plr.pev.angles = Math.VecToAngles(lookDir);
+}
