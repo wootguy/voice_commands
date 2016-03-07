@@ -45,6 +45,7 @@ class PlayerState
 	string talker_id;  // voice this player is using
 	int pitch; 		   // voice pitch adjustment (100 = normal, range = 1-1000)
 	int lastChatMenu;  // if non-zero, player currently has a chat menu open
+	int globalInvert;  // set to 1 when a chat menu was opened 3 times (inverse global state)
 	string lastSample; // store the last soundFile played so we can stop it later
 	uint lastChatTime; // time this player last used a voice command
 	int lastPhraseId;
@@ -85,11 +86,14 @@ uint g_command_delay = 2500;
 bool debug_mode = false;
 string default_voice = 'Scientist';
 string plugin_path = 'scripts/plugins/voice_commands/';
+// All possible sound channels we can use
+array<SOUND_CHANNEL> channels = {CHAN_ITEM, CHAN_VOICE, CHAN_STATIC, CHAN_BODY, CHAN_STREAM, CHAN_WEAPON, CHAN_NETWORKVOICE_BASE, CHAN_AUTO};
+	
 
 void PluginInit()
 {
-	g_Module.ScriptInfo.SetAuthor( "Drake \"w00tguy\" Hunter" );
-	g_Module.ScriptInfo.SetContactInfo( "w00tguy123@gmail.com" );
+	g_Module.ScriptInfo.SetAuthor( "w00tguy" );
+	g_Module.ScriptInfo.SetContactInfo( "w00tguy123 - forums.svencoop.com" );
 	g_Hooks.RegisterHook( Hooks::Player::ClientSay, @ClientSay );	
 	
 	loadConfig();
@@ -114,6 +118,7 @@ void MapInit()
 		PlayerState@ state = cast< PlayerState@ >(player_states[states[i]]);
 		state.lastChatTime = 0;
 		state.lastChatMenu = 0;
+		state.globalInvert = 0;
 	}
 }
 
@@ -335,6 +340,7 @@ void voiceMenuCallback(CTextMenu@ menu, CBasePlayer@ plr, int page, const CTextM
 	PlayerState@ state = getPlayerState(plr);
 
 	state.lastChatMenu = 0;	// return chat menu to normal order
+	state.globalInvert = 0; // no inversion either
 	
 	// Check if player has waited long enough to use another command
 	uint t = uint(g_EngineFuncs.Time()*1000); // Get server time in milliseconds
@@ -352,9 +358,14 @@ void voiceMenuCallback(CTextMenu@ menu, CBasePlayer@ plr, int page, const CTextM
 		g_Game.AlertMessage( at_console, "Bad talker ID: " + state.talker_id + "\n");
 		return;
 	}
+	
+	string phraseId = item.szUserData;
+	bool global = phraseId.Length() > 1 and phraseId[0] == 'G' and phraseId[1] == ':';
+	if (global)
+		phraseId = phraseId.SubString(2, phraseId.Length()-2);
+	
 	// get the selected voice and phrase group
 	Talker@ talker = cast< Talker@ >(g_talkers[state.talker_id]);
-	string phraseId = item.szUserData;
 	if (plr.pev.deadflag != DEAD_NO)
 		phraseId = "Dead"; // players can't talk when they're dead, but they can gurgle a bit
 		
@@ -387,9 +398,6 @@ void voiceMenuCallback(CTextMenu@ menu, CBasePlayer@ plr, int page, const CTextM
 	
 	Phrase@ phrase = phrases[idx];
 	
-	// All possible sound channels we can use
-	array<SOUND_CHANNEL> channels = {CHAN_ITEM, CHAN_VOICE, CHAN_STATIC, CHAN_BODY, CHAN_STREAM, CHAN_WEAPON, CHAN_NETWORKVOICE_BASE, CHAN_AUTO};
-	
 	// figure out the volume and gain for this sample
 	uint gain = g_sound_gain;
 	float vol = 1.0f;
@@ -407,11 +415,40 @@ void voiceMenuCallback(CTextMenu@ menu, CBasePlayer@ plr, int page, const CTextM
 	for (uint i = 0; i < channels.length(); i++)
 		g_SoundSystem.StopSound(plr.edict(), channels[i], state.lastSample, false);
 	
-	// play the sound, possibly on multiple channels to increase volume
-	for (uint i = 0; i < gain; i++)
-		g_SoundSystem.PlaySound(plr.edict(), channels[i], phrase.soundFile, vol, 1.0f, 0, state.pitch, 0, true, plr.pev.origin);
+	if (global) 
+	{
+		// play sound through a global entity so everyone can hear it
+		string ambientName = "vc__" + phrase.soundFile;
+		dictionary keyvalues;
+		keyvalues["targetname"] = ambientName;
+		keyvalues["message"] = phrase.soundFile;
+		keyvalues["pitch"] = string(state.pitch);
+		keyvalues["spawnflags"] = "49";
+		keyvalues["playmode"] = "1";
+		keyvalues["health"] = string(vol * 10);
 		
+		array<CBaseEntity@> ambients;
+		for (uint g = 0; g < gain; g++)
+			ambients.insertLast( g_EntityFuncs.CreateEntity( "ambient_generic", keyvalues, true ) );
+		g_EntityFuncs.FireTargets(ambientName, null, null, USE_ON);
+		
+		// delete the entities we just created
+		for (uint g = 0; g < ambients.length(); g++) 
+			if (ambients[g] !is null)
+				g_EntityFuncs.Remove(ambients[g]);
+	}
+	else
+	{
+		// play the sound locally, possibly on multiple channels to increase volume
+		for (uint i = 0; i < gain; i++) {
+			g_SoundSystem.PlaySound(plr.edict(), channels[i], phrase.soundFile, vol, 1.0f, 0, state.pitch, 0, true, plr.pev.origin);
+		}
+	}
+	
 	state.lastSample = phrase.soundFile;
+	
+	if (global)
+		g_PlayerFuncs.SayTextAll(plr, "(voice) " + plr.pev.netname + ": " + phraseId + "\n");
 	
 	// Get the command sprite
 	if (g_enable_sprites)
@@ -456,12 +493,62 @@ PlayerState@ getPlayerState(CBasePlayer@ plr)
 		PlayerState state;
 		state.talker_id = default_voice;
 		state.lastChatMenu = 0;
+		state.globalInvert = 0;
 		state.pitch = 100;
 		state.lastChatTime = 0;
 		player_states[steamId] = state;
 		g_Game.AlertMessage( at_console, "Got new steam id " + steamId + "\n");
 	}
 	return cast<PlayerState@>( player_states[steamId] );
+}
+
+void openChatMenu(PlayerState@ state, CBasePlayer@ plr, int menuId, bool global)
+{
+	state.initMenu(plr, voiceMenuCallback, state.lastChatMenu != 0);
+	
+	string menuTitle = (menuId == 1) ? command_menu_1_title : command_menu_2_title;
+	if (state.lastChatMenu < 0)
+		global = !global;
+	if (global)
+		menuTitle = "(Global) " + menuTitle;
+	state.menu.SetTitle(menuTitle + "\n");
+	string menuDataPrefix = global ? "G:" : ""; // G: prefix means we want this sound to be global
+	if (state.lastChatMenu == menuId)
+	{
+		// show chat commands in reverse order (so you don't have to stretch your index finger for 5, 6, and 7)
+		for (int i = int(g_commands.length() - 1); i >= 0; i--)
+			if (g_commands[i].menu == menuId)
+				state.menu.AddItem(g_commands[i].name, menuDataPrefix + g_commands[i].name);
+		state.lastChatMenu = -menuId;
+	}
+	else if (state.lastChatMenu == -menuId) // inverse global mode
+	{
+		// show chat commands in normal order, but with global mode inverted
+		if (state.globalInvert == 1) {
+			for (int i = int(g_commands.length() - 1); i >= 0; i--)
+				if (g_commands[i].menu == menuId)
+					state.menu.AddItem(g_commands[i].name, menuDataPrefix + g_commands[i].name);
+			state.globalInvert = 0;
+			state.lastChatMenu = 0;
+		} else {
+			for (int i = 0; i < int(g_commands.length()); i++)
+				if (g_commands[i].menu == menuId)
+					state.menu.AddItem(g_commands[i].name, menuDataPrefix + g_commands[i].name);
+			state.globalInvert = 1;
+		}
+	}
+	else
+	{
+		// show chat commands in normal order
+		for (int i = 0; i < int(g_commands.length()); i++)
+			if (g_commands[i].menu == menuId)
+				state.menu.AddItem(g_commands[i].name, menuDataPrefix + g_commands[i].name);
+		state.lastChatMenu = menuId;
+		state.globalInvert = 0;
+	}
+	
+	
+	state.openMenu(plr);
 }
 
 HookReturnCode ClientSay( SayParameters@ pParams )
@@ -475,56 +562,16 @@ HookReturnCode ClientSay( SayParameters@ pParams )
 	{
 		if ( args[0] == "/vc" )
 		{
-			if ( args[1] == "1" )
+			if ( args[1] == "1" || args[1] == "2" )
 			{
-				state.initMenu(plr, voiceMenuCallback, state.lastChatMenu != 0);
-				
-				state.menu.SetTitle(command_menu_1_title + "\n");
-				if (state.lastChatMenu != 1)
-				{
-					// show chat commands in normal order
-					for (int i = 0; i < int(g_commands.length()); i++)
-						if (g_commands[i].menu == 1)
-							state.menu.AddItem(g_commands[i].name, g_commands[i].name);
-					state.lastChatMenu = 1;
-				}
-				else
-				{
-					// show chat commands in reverse order (so you don't have to stretch your index finger for 5, 6, and 7)
-					for (int i = int(g_commands.length() - 1); i >= 0; i--)
-						if (g_commands[i].menu == 1)
-							state.menu.AddItem(g_commands[i].name, g_commands[i].name);
-					state.lastChatMenu = 0;
-				}
-				
-				state.openMenu(plr);
+				openChatMenu(state, plr, args[1] == "1" ? 1 : 2, false);
 				
 				pParams.ShouldHide = true;
 				return HOOK_HANDLED;
 			}
-			if ( args[1] == "2" )
+			if ( args[1] == 'global' and args.ArgC() > 2 and (args[2] == "1" || args[2] == "2") )
 			{
-				state.initMenu(plr, voiceMenuCallback, state.lastChatMenu != 0);
-				
-				state.menu.SetTitle(command_menu_2_title + "\n");
-				if (state.lastChatMenu != 2)
-				{
-					// show chat commands in normal order
-					for (int i = 0; i < int(g_commands.length()); i++)
-						if (g_commands[i].menu == 2)
-							state.menu.AddItem(g_commands[i].name, g_commands[i].name);
-					state.lastChatMenu = 2;
-				}
-				else
-				{
-					// show chat commands in reverse order (so you don't have to stretch your index finger for 5, 6, and 7)
-					for (int i = int(g_commands.length() - 1); i >= 0; i--)
-						if (g_commands[i].menu == 2)
-							state.menu.AddItem(g_commands[i].name, g_commands[i].name);
-					state.lastChatMenu = 0;
-				}
-				
-				state.openMenu(plr);
+				openChatMenu(state, plr, args[2] == "1" ? 1 : 2, true);
 				
 				pParams.ShouldHide = true;
 				return HOOK_HANDLED;
@@ -541,6 +588,7 @@ HookReturnCode ClientSay( SayParameters@ pParams )
 				
 				state.openMenu(plr);
 				state.lastChatMenu = 0;	
+				state.globalInvert = 0;
 				
 				pParams.ShouldHide = true;
 				return HOOK_HANDLED;
@@ -563,9 +611,9 @@ HookReturnCode ClientSay( SayParameters@ pParams )
 			pParams.ShouldHide = true;
 			g_PlayerFuncs.SayText(plr, "Voice command usage:\n");
 			g_PlayerFuncs.SayText(plr, 'Say "/vc X" top open a command menu (where X = 1 or 2).\n');
+			g_PlayerFuncs.SayText(plr, 'Say "/vc global X" to open a command menu in global mode (everyone can hear you across the map).\n');
 			g_PlayerFuncs.SayText(plr, 'Say "/vc voice" to select a different voice.\n');
 			g_PlayerFuncs.SayText(plr, 'Say "/vc pitch X" to change your voice pitch (where X = 1-1000).\n');
-			g_PlayerFuncs.SayText(plr, 'You can bind commands to keys using the console (ex: bind Z "say /vc 1").\n');
 			return HOOK_HANDLED;
 		}
 		
