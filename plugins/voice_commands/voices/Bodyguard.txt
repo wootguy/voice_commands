@@ -1,0 +1,67 @@
+[Yes]
+2 : bodyguard/yougotit.ogg
+
+[No]
+3 : bodyguard/getlost.ogg
+4 : bodyguard/whathelljoke.ogg
+
+[Hello]
+2 : bodyguard/hello.ogg
+3 : bodyguard/whatsgoinon.ogg
+
+[Cheer]
+3 : bodyguard/nicesuit.ogg
+4 : bodyguard/shownupdrunk.ogg
+
+[Follow me]
+5 : bodyguard/heyoverhere.ogg
+
+[I'm with you]
+3 : bodyguard/letsmove.ogg
+3 : bodyguard/getshitoverwith.ogg
+
+[Thanks]
+3 : bodyguard/looklikeshit.ogg
+
+[You're welcome]
+3 : bodyguard/babysitter.ogg
+
+[Help]
+3 : bodyguard/primalroar.ogg
+
+[Sorry]
+3 : bodyguard/stop1.ogg
+
+[Chit-chat]
+4 : bodyguard/ashestoashes.ogg
+3 : bodyguard/happenedhere.ogg
+3 : bodyguard/hellhappenedyou.ogg
+3 : bodyguard/imbusy.ogg
+4 : bodyguard/justafleshwound.ogg
+4 : bodyguard/layeggs.ogg
+3 : bodyguard/mondays.ogg
+3 : bodyguard/notaninjury.ogg
+3 : bodyguard/onassignment.ogg
+3 : bodyguard/palimworking.ogg
+3 : bodyguard/pathetic.ogg
+3 : bodyguard/mondays.ogg
+
+[Taunt]
+3 : bodyguard/bringiton.ogg
+3 : bodyguard/shootface.ogg
+3 : bodyguard/pumpsomelead.ogg
+
+[Run away]
+3 : bodyguard/laterfellas.ogg
+4 : bodyguard/pain4.ogg
+
+[Stop]
+4 : bodyguard/knockitoff.ogg
+4 : bodyguard/hellareyoudoing.ogg
+4 : bodyguard/backoff.ogg
+
+[Dead]
+3 : bodyguard/die1.ogg
+3 : bodyguard/die2.ogg
+3 : bodyguard/die3.ogg
+3 : bodyguard/pain3.ogg

@@ -1,0 +1,100 @@
+[Yes]
+5 : otis/suppose.wav
+4 : otis/yes.wav
+4 : otis/yessir.wav
+4 : otis/youbet.wav
+
+[No]
+4 : otis/dontguess.wav
+4 : otis/no.wav
+4 : otis/nope.wav
+4 : otis/nosir.wav
+4 : otis/noway.wav
+
+[Hello]
+4 : otis/hello.wav
+3 : otis/hey.wav
+3 : otis/hiya.wav
+3 : otis/ot_intro_hello1.wav
+
+[Cheer]
+3 : otis/another.wav
+3 : otis/gotone.wav
+3 : otis/seethat.wav
+3 : voice_commands/otis/cheer1.ogg
+
+[Follow me]
+4 : otis/letsgo.wav
+4 : otis/together.wav
+
+[I'm with you]
+4 : otis/behind.wav
+4 : otis/diealone.wav
+4 : otis/live.wav
+4 : otis/soldier.wav
+4 : otis/teamup.wav
+
+[Thanks]
+2 : otis/of1a1_ot04.wav
+
+[You're welcome]
+4 : otis/alright.wav
+4 : otis/gladof.wav
+4 : otis/yeah.wav
+
+[Help]
+4 : otis/notalone.wav
+
+[Sorry]
+3 : voice_commands/otis/sorry1.ogg
+
+[Chit-chat]
+4 : otis/aliencombat.wav
+4 : otis/aliens.wav
+4 : otis/beer.wav
+4 : otis/bigboned.wav
+4 : otis/bridge.wav
+4 : otis/chili.wav
+4 : otis/closet.wav
+4 : otis/cousin.wav
+4 : otis/dejavu.wav
+4 : otis/firepl.wav
+4 : otis/getanyworse.wav
+4 : otis/go_on.wav
+4 : otis/hearsomething.wav
+4 : otis/insurance.wav
+4 : otis/janitor.wav
+3 : otis/leftovers.wav
+4 : otis/mom.wav
+4 : otis/noise.wav
+4 : otis/onry.wav
+2 : otis/ot_intro_hello2.wav
+2 : otis/quarter.wav
+4 : otis/reputation.wav
+4 : otis/somethingmoves.wav
+4 : otis/standguard.wav
+4 : otis/talkmuch.wav
+4 : otis/wuss.wav
+
+[Taunt]
+4 : otis/bring.wav
+4 : otis/bully.wav
+4 : otis/chump.wav
+4 : otis/die.wav
+4 : otis/dontmake.wav
+4 : otis/somuch.wav
+
+[Run away]
+4 : otis/tooyoung.wav
+4 : otis/virgin.wav
+
+[Stop]
+3 : otis/damn.wav
+4 : otis/quitit.wav
+
+[Dead]
+2 : otis/imdead.wav
+2 : otis/hitbad.wav
+2 : otis/imhit.wav
+2 : otis/medic.wav
+2 : otis/scar.wav
