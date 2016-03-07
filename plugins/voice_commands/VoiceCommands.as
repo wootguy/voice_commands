@@ -109,12 +109,16 @@ void MapInit()
 {
 	g_Game.AlertMessage( at_console, "Precaching " + g_all_phrases.length() + " sounds and " + g_commands.length() + " sprites\n");
 	
-	for (uint i = 0; i < g_all_phrases.length(); i++)
+	for (uint i = 0; i < g_all_phrases.length(); i++) {
 		g_SoundSystem.PrecacheSound(g_all_phrases[i].soundFile);
+		g_Game.PrecacheGeneric("sound/" + g_all_phrases[i].soundFile); // yay, no more .res file hacking
+	}
 		
 	if (g_enable_sprites)
 		for (uint i = 0; i < g_commands.length(); i++)
 			g_Game.PrecacheModel(g_commands[i].sprite);
+	
+	g_Game.PrecacheGeneric("gfx/env/barrendesertbk.tga");
 	
 	// Reset temporary vars on map change
 	array<string>@ states = player_states.getKeys();
