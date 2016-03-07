@@ -212,8 +212,8 @@ void loadConfig()
 					g_monster_reactions = atoi( settingValue[1] ) != 0;	
 				if (settingValue[0] == "enable_sprites")
 					g_enable_sprites = atoi( settingValue[1] ) != 0;
-				if (settingValue[0] == "command_delay")
-					g_command_delay = atoi( settingValue[1] );	
+				//if (settingValue[0] == "command_delay")
+				//	g_command_delay = atoi( settingValue[1] );	
 				if (settingValue[0] == "global_gain")
 					g_sound_gain = atoi( settingValue[1] );	
 				if (settingValue[0] == "debug_mode")
@@ -329,7 +329,7 @@ CBaseMonster@ getMonsterLookingAt(CBasePlayer@ plr, float maxDistance)
 	if ( tr.flFraction < 1.0 and tr.pHit !is null )
 	{
 		CBaseEntity@ hitEnt = g_EntityFuncs.Instance( tr.pHit );
-		if ( hitEnt !is null and hitEnt.IsMonster() != 0 )
+		if ( hitEnt !is null and hitEnt.IsMonster() )
 		{
 			return cast<CBaseMonster@>(hitEnt);
 		}
@@ -344,7 +344,7 @@ void triggerMonsterAction(CBaseMonster@ monster, CBasePlayer@ plr, string action
 	if (action == 'Follow me' or action == 'Help') {
 		monster.StartPlayerFollowing(plr);
 	} else if (action == 'stop') {
-		monster.StopPlayerFollowing(0);
+		monster.StopPlayerFollowing(false);
 	} else {
 		//talkmon.IdleRespond();
 		//talkmon.Talk(2.0f);
@@ -481,10 +481,8 @@ void voiceMenuCallback(CTextMenu@ menu, CBasePlayer@ plr, int page, const CTextM
 	if (g_enable_sprites) {
 		for (uint i = 0; i < g_commands.length(); i++)
 			if (g_commands[i].name == phraseId)
-				plr.ShowOverheadSprite(g_commands[i].sprite, 51.0f, (g_command_delay / 1000.0f));
-	}
-	
-	
+				plr.ShowOverheadSprite(g_commands[i].sprite, 51.0f, 2.5f);
+	}	
 	
 	// Monster reactions to sounds
 	if (g_monster_reactions)
@@ -583,30 +581,23 @@ void openChatMenu(PlayerState@ state, CBasePlayer@ plr, int menuId, bool global)
 	state.openMenu(plr);
 }
 
-HookReturnCode ClientSay( SayParameters@ pParams )
-{	
-	CBasePlayer@ plr = pParams.GetPlayer();
-	const CCommand@ args = pParams.GetArguments();
-	
+bool doCommand(CBasePlayer@ plr, const CCommand@ args)
+{
 	PlayerState@ state = getPlayerState(plr);
 	
 	if ( args.ArgC() > 0 )
 	{
-		if ( args[0] == "/vc" )
+		if ( args[0] == ".vc" )
 		{
 			if ( args[1] == "1" || args[1] == "2" )
 			{
 				openChatMenu(state, plr, args[1] == "1" ? 1 : 2, false);
-				
-				pParams.ShouldHide = true;
-				return HOOK_HANDLED;
+				return true;
 			}
 			if ( args[1] == 'global' and args.ArgC() > 2 and (args[2] == "1" || args[2] == "2") )
 			{
 				openChatMenu(state, plr, args[2] == "1" ? 1 : 2, true);
-				
-				pParams.ShouldHide = true;
-				return HOOK_HANDLED;
+				return true;
 			}
 			if ( args[1] == "voice" )
 			{
@@ -621,9 +612,7 @@ HookReturnCode ClientSay( SayParameters@ pParams )
 				state.openMenu(plr);
 				state.lastChatMenu = 0;	
 				state.globalInvert = 0;
-				
-				pParams.ShouldHide = true;
-				return HOOK_HANDLED;
+				return true;
 			}
 			if ( args[1] == "pitch" and args.ArgC() > 2 )
 			{		
@@ -636,19 +625,37 @@ HookReturnCode ClientSay( SayParameters@ pParams )
 				g_PlayerFuncs.SayText(plr, "Your voice pitch has been set to " + newPitch + "\n");
 				
 				state.pitch = newPitch;
-				
-				pParams.ShouldHide = true;
-				return HOOK_HANDLED;
+				return true;
 			}
-			pParams.ShouldHide = true;
 			g_PlayerFuncs.SayText(plr, "Voice command usage:\n");
-			g_PlayerFuncs.SayText(plr, 'Say "/vc X" top open a command menu (where X = 1 or 2).\n');
-			g_PlayerFuncs.SayText(plr, 'Say "/vc global X" to open a command menu in global mode (everyone can hear you across the map).\n');
-			g_PlayerFuncs.SayText(plr, 'Say "/vc voice" to select a different voice.\n');
-			g_PlayerFuncs.SayText(plr, 'Say "/vc pitch X" to change your voice pitch (where X = 1-1000).\n');
-			return HOOK_HANDLED;
+			g_PlayerFuncs.SayText(plr, 'Say ".vc X" top open a command menu (where X = 1 or 2).\n');
+			g_PlayerFuncs.SayText(plr, 'Say ".vc global X" to open a command menu in global mode (everyone can hear you across the map).\n');
+			g_PlayerFuncs.SayText(plr, 'Say ".vc voice" to select a different voice.\n');
+			g_PlayerFuncs.SayText(plr, 'Say ".vc pitch X" to change your voice pitch (where X = 1-1000).\n');
+			return true;
 		}
-		
 	}
+	return false;
+}
+
+HookReturnCode ClientSay( SayParameters@ pParams )
+{	
+	CBasePlayer@ plr = pParams.GetPlayer();
+	const CCommand@ args = pParams.GetArguments();
+	
+	if (doCommand(plr, args))
+	{
+		pParams.ShouldHide = true;
+		return HOOK_HANDLED;
+	}
+	
 	return HOOK_CONTINUE;
+}
+
+CClientCommand _noclip("vc", "Voice command menu", @voiceCmd );
+
+void voiceCmd( const CCommand@ args )
+{
+	CBasePlayer@ plr = g_ConCommandSystem.GetCurrentPlayer();
+	doCommand(plr, args);
 }
