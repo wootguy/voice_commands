@@ -388,7 +388,9 @@ void voiceMenuCallback(CTextMenu@ menu, CBasePlayer@ plr, int page, const CTextM
 		return;
 	}
 	
-	string phraseId = item.szUserData;
+	string phraseId;
+	item.m_pUserData.retrieve(phraseId);
+	
 	bool global = phraseId.Length() > 1 and phraseId[0] == 'G' and phraseId[1] == ':';
 	if (global)
 		phraseId = phraseId.SubString(2, phraseId.Length()-2);
@@ -512,8 +514,10 @@ void voiceSelectCallback(CTextMenu@ menu, CBasePlayer@ plr, int page, const CTex
 		return;
 	}
 	PlayerState@ state = getPlayerState(plr);
-	state.talker_id = item.szUserData;
-	g_PlayerFuncs.SayText(plr, "Your voice has been set to " + item.szName + "\n");
+	state.talker_id;
+	item.m_pUserData.retrieve(state.talker_id);
+	
+	g_PlayerFuncs.SayText(plr, "Your voice has been set to " + item.m_szName + "\n");
 }
 
 // Will create a new state if the requested one does not exit
@@ -544,6 +548,8 @@ void openChatMenu(PlayerState@ state, CBasePlayer@ plr, int menuId, bool global)
 	string menuTitle = (menuId == 1) ? command_menu_1_title : command_menu_2_title;
 	if (state.lastChatMenu < 0)
 		global = !global;
+	if (abs(state.lastChatMenu) != menuId)
+		global = false; // don't continue the global loop when changing menus
 	if (global)
 		menuTitle = "(Global) " + menuTitle;
 	state.menu.SetTitle(menuTitle + "\n");
@@ -553,7 +559,7 @@ void openChatMenu(PlayerState@ state, CBasePlayer@ plr, int menuId, bool global)
 		// show chat commands in reverse order (so you don't have to stretch your index finger for 5, 6, and 7)
 		for (int i = int(g_commands.length() - 1); i >= 0; i--)
 			if (g_commands[i].menu == menuId)
-				state.menu.AddItem(g_commands[i].name, menuDataPrefix + g_commands[i].name);
+				state.menu.AddItem(g_commands[i].name, any(menuDataPrefix + g_commands[i].name));
 		state.lastChatMenu = -menuId;
 	}
 	else if (state.lastChatMenu == -menuId) // inverse global mode
@@ -562,13 +568,13 @@ void openChatMenu(PlayerState@ state, CBasePlayer@ plr, int menuId, bool global)
 		if (state.globalInvert == 1) {
 			for (int i = int(g_commands.length() - 1); i >= 0; i--)
 				if (g_commands[i].menu == menuId)
-					state.menu.AddItem(g_commands[i].name, menuDataPrefix + g_commands[i].name);
+					state.menu.AddItem(g_commands[i].name, any(menuDataPrefix + g_commands[i].name));
 			state.globalInvert = 0;
 			state.lastChatMenu = 0;
 		} else {
 			for (int i = 0; i < int(g_commands.length()); i++)
 				if (g_commands[i].menu == menuId)
-					state.menu.AddItem(g_commands[i].name, menuDataPrefix + g_commands[i].name);
+					state.menu.AddItem(g_commands[i].name, any(menuDataPrefix + g_commands[i].name));
 			state.globalInvert = 1;
 		}
 	}
@@ -577,7 +583,7 @@ void openChatMenu(PlayerState@ state, CBasePlayer@ plr, int menuId, bool global)
 		// show chat commands in normal order
 		for (int i = 0; i < int(g_commands.length()); i++)
 			if (g_commands[i].menu == menuId)
-				state.menu.AddItem(g_commands[i].name, menuDataPrefix + g_commands[i].name);
+				state.menu.AddItem(g_commands[i].name, any(menuDataPrefix + g_commands[i].name));
 		state.lastChatMenu = menuId;
 		state.globalInvert = 0;
 	}
@@ -611,7 +617,7 @@ bool doCommand(CBasePlayer@ plr, const CCommand@ args)
 				
 				// show a list of all voices
 				for (uint i = 0; i < g_talkers_ordered.length(); i++)
-					state.menu.AddItem(g_talkers_ordered[i], g_talkers_ordered[i]);
+					state.menu.AddItem(g_talkers_ordered[i], any(g_talkers_ordered[i]));
 				
 				state.openMenu(plr);
 				state.lastChatMenu = 0;	
