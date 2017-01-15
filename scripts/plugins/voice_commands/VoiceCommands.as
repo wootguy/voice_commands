@@ -168,6 +168,7 @@ void loadConfig()
 		{
 			f.ReadLine( line );
 			line.Trim();
+			line.Trim('\r'); // Linux won't strip these during ReadLine or Trim
 			if (line.Length() == 0 or line[0] == '/')
 				continue;
 			if (line[0] == '/' and line[1] == '/') 
@@ -254,7 +255,7 @@ void loadConfig()
 		}
 	}
 	else
-		g_Game.AlertMessage( at_console, "Unable to open voice data file:\n" + dataPath + "\n");
+		g_Game.AlertMessage( at_console, "Unable to open config file:\n" + dataPath + "\n");
 }
 
 void loadVoiceData()
