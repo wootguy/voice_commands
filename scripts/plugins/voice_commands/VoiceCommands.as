@@ -280,6 +280,7 @@ void loadVoiceData()
 			{
 				f.ReadLine( line );			
 				line.Trim();
+				line.Trim('\r'); // Linux won't strip these during ReadLine or Trim
 				if (line.Length() == 0 or line[0] == '/')
 					continue;
 
