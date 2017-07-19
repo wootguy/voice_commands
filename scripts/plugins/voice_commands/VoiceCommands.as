@@ -88,7 +88,7 @@ bool debug_log = false;
 string default_voice = 'Scientist';
 string plugin_path = 'scripts/plugins/voice_commands/';
 // All possible sound channels we can use
-array<SOUND_CHANNEL> channels = {CHAN_STATIC, CHAN_VOICE, CHAN_STREAM, CHAN_BODY, CHAN_ITEM, CHAN_NETWORKVOICE_BASE, CHAN_AUTO, CHAN_WEAPON};
+array<SOUND_CHANNEL> channels = {CHAN_STATIC, CHAN_VOICE, CHAN_STREAM, CHAN_BODY, CHAN_ITEM, CHAN_AUTO, CHAN_WEAPON};
 
 void print(string text) { g_Game.AlertMessage( at_console, "VoiceCommands: " + text); }
 void println(string text) { print(text + "\n"); }
@@ -348,9 +348,9 @@ void triggerMonsterAction(CBaseMonster@ monster, CBasePlayer@ plr, string action
 {
 	//CTalkMonster@ talkmon = cast<CTalkMonster@>(monster);
 	if (action == 'Follow me' or action == 'Help') {
-		monster.StartPlayerFollowing(plr);
-	} else if (action == 'stop') {
-		monster.StopPlayerFollowing(false);
+		monster.StartPlayerFollowing(plr, false);
+	} else if (action == 'Stop') {
+		monster.StopPlayerFollowing(false, false);
 	} else {
 		//talkmon.IdleRespond();
 		//talkmon.Talk(2.0f);
