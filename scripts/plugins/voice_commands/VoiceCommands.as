@@ -47,7 +47,7 @@ class PlayerState
 	int lastChatMenu;  // if non-zero, player currently has a chat menu open
 	int globalInvert;  // set to 1 when a chat menu was opened 3 times (inverse global state)
 	string lastSample; // store the last soundFile played so we can stop it later
-	uint lastChatTime; // time this player last used a voice command
+	float lastChatTime; // time this player last used a voice command
 	int lastPhraseId;
 	
 	void initMenu(CBasePlayer@ plr, TextMenuPlayerSlotCallback@ callback, bool destroyOldMenu)
@@ -77,13 +77,13 @@ array<CommandGroup@> g_commands; // all of em
 string command_menu_1_title = "Actions:";
 string command_menu_2_title = "Responses:";
 
+CCVar@ g_enable_gain;
+CCVar@ g_global_gain;
+CCVar@ g_monster_reactions;
+CCVar@ g_command_delay;
+CCVar@ g_debug_mode;
+
 dictionary player_states; // persistent-ish player data, organized by steam-id or username if on a LAN server, values are @PlayerState
-int g_sound_gain = 0; // apply gain to all sound clips if > 1
-bool g_enable_gain = true;
-bool g_monster_reactions = true;
-bool g_enable_sprites = true;
-uint g_command_delay = 2500;
-bool debug_mode = false;
 bool debug_log = false;
 string default_voice = 'Scientist';
 string plugin_path = 'scripts/plugins/voice_commands/';
@@ -103,6 +103,12 @@ void PluginInit()
 	
 	loadConfig();		
 	loadVoiceData();
+	
+	@g_enable_gain = CCVar("enable_gain", 1, "Amplify sounds by playing multiple instances at once (occasionally plays sounds off-sync).", ConCommandFlag::AdminOnly);
+	@g_global_gain = CCVar("global_gain", 0, "Extra volume applied to all sound files (0-6). Has no effect if gain is disabled.", ConCommandFlag::AdminOnly);
+	@g_monster_reactions = CCVar("monster_reactions", 1, "Monsters respond to player voice commands (e.g. follow player, detect noise).", ConCommandFlag::AdminOnly);
+	@g_command_delay = CCVar("delay", 2.5, "Delay between sending commands, in seconds", ConCommandFlag::AdminOnly);
+	@g_debug_mode = CCVar("debug", 0, "If set to 1, sound details will be printed in chat and sounds will not play in a random order.", ConCommandFlag::AdminOnly);
 }
 
 void MapInit()
@@ -114,9 +120,8 @@ void MapInit()
 		g_Game.PrecacheGeneric("sound/" + g_all_phrases[i].soundFile); // yay, no more .res file hacking
 	}
 		
-	if (g_enable_sprites)
-		for (uint i = 0; i < g_commands.length(); i++)
-			g_Game.PrecacheModel(g_commands[i].sprite);
+	for (uint i = 0; i < g_commands.length(); i++)
+		g_Game.PrecacheModel(g_commands[i].sprite);
 	
 	g_Game.PrecacheGeneric("gfx/env/barrendesertbk.tga");
 	
@@ -211,18 +216,6 @@ void loadConfig()
 					command_menu_1_title = settingValue[1];
 				if (settingValue[0] == "command_menu_2_title")
 					command_menu_2_title = settingValue[1];
-				if (settingValue[0] == "enable_gain")
-					g_enable_gain = atoi( settingValue[1] ) != 0;
-				if (settingValue[0] == "monster_reactions")
-					g_monster_reactions = atoi( settingValue[1] ) != 0;	
-				if (settingValue[0] == "enable_sprites")
-					g_enable_sprites = atoi( settingValue[1] ) != 0;
-				//if (settingValue[0] == "command_delay")
-				//	g_command_delay = atoi( settingValue[1] );	
-				if (settingValue[0] == "global_gain")
-					g_sound_gain = atoi( settingValue[1] );	
-				if (settingValue[0] == "debug_mode")
-					debug_mode = atoi( settingValue[1] ) != 0;	
 			}
 			else if (parseMode == PARSE_VOICES)
 			{
@@ -361,6 +354,12 @@ void triggerMonsterAction(CBaseMonster@ monster, CBasePlayer@ plr, string action
 
 int g_idx = 0; // debug
 
+string format_float(float f)
+{
+	uint decimal = uint(((f - int(f)) * 10)) % 10;
+	return "" + int(f) + "." + decimal;
+}
+
 // handles player voice chats
 void voiceMenuCallback(CTextMenu@ menu, CBasePlayer@ plr, int page, const CTextMenuItem@ item)
 {
@@ -374,12 +373,12 @@ void voiceMenuCallback(CTextMenu@ menu, CBasePlayer@ plr, int page, const CTextM
 	state.globalInvert = 0; // no inversion either
 	
 	// Check if player has waited long enough to use another command
-	uint t = uint(g_EngineFuncs.Time()*1000); // Get server time in milliseconds
-	uint delta = t - state.lastChatTime;
-	if (delta < g_command_delay)
+	float t = g_Engine.time; // Get server time in milliseconds
+	float delta = t - state.lastChatTime;
+	if (!g_debug_mode.GetBool() and delta < g_command_delay.GetFloat())
 	{
-		float waitTime = float(g_command_delay - delta) / 1000.0f;
-		g_PlayerFuncs.SayText(plr, "Wait " + waitTime + " seconds before using another command.\n");
+		float waitTime = g_command_delay.GetFloat() - delta;
+		g_PlayerFuncs.PrintKeyBindingString(plr, "Wait " + format_float(waitTime) + " seconds\n");
 		return;
 	}
 	state.lastChatTime = t;
@@ -423,7 +422,7 @@ void voiceMenuCallback(CTextMenu@ menu, CBasePlayer@ plr, int page, const CTextM
 	state.lastPhraseId = phrases[idx].id;
 	
 	// play in a linear order for debugging
-	if (debug_mode)
+	if (g_debug_mode.GetBool())
 	{
 		idx = g_idx % phrases.length();
 		g_idx += 1;
@@ -432,7 +431,7 @@ void voiceMenuCallback(CTextMenu@ menu, CBasePlayer@ plr, int page, const CTextM
 	Phrase@ phrase = phrases[idx];
 	
 	// figure out the volume and gain for this sample
-	uint gain = g_sound_gain;
+	uint gain = g_global_gain.GetInt();
 	float vol = 1.0f;
 	if (phrase.gain >= 1)
 		gain += int(phrase.gain);
@@ -441,7 +440,7 @@ void voiceMenuCallback(CTextMenu@ menu, CBasePlayer@ plr, int page, const CTextM
 	if (gain > channels.length())
 		gain = channels.length();
 	
-	if (!g_enable_gain)
+	if (!g_enable_gain.GetBool())
 		gain = 1;
 	
 	// Stop the last sound file in case its still playing
@@ -485,15 +484,13 @@ void voiceMenuCallback(CTextMenu@ menu, CBasePlayer@ plr, int page, const CTextM
 	if (global)
 		g_PlayerFuncs.SayTextAll(plr, "(voice) " + plr.pev.netname + ": " + phraseId + "\n");
 	
-	// Get the command sprite
-	if (g_enable_sprites) {
-		for (uint i = 0; i < g_commands.length(); i++)
-			if (g_commands[i].name == phraseId)
-				plr.ShowOverheadSprite(g_commands[i].sprite, 51.0f, 2.5f);
-	}	
+	// Show the command sprite
+	for (uint i = 0; i < g_commands.length(); i++)
+		if (g_commands[i].name == phraseId)
+			plr.ShowOverheadSprite(g_commands[i].sprite, 51.0f, 2.5f);
 	
 	// Monster reactions to sounds
-	if (g_monster_reactions)
+	if (g_monster_reactions.GetBool())
 	{
 		GetSoundEntInstance().InsertSound(4, plr.pev.origin, NORMAL_GUN_VOLUME, 0, plr); // let monsters respond to this sound
 		
@@ -505,7 +502,7 @@ void voiceMenuCallback(CTextMenu@ menu, CBasePlayer@ plr, int page, const CTextM
 		}
 	}
 	
-	if (debug_mode)
+	if (g_debug_mode.GetBool())
 		g_PlayerFuncs.SayTextAll(plr, "Gain: " + gain + ", Volume: " + vol + ", Pitch: " + state.pitch + ", Sound File: " + phrase.soundFile + "\n");
 }
 
@@ -631,19 +628,20 @@ bool doCommand(CBasePlayer@ plr, const CCommand@ args)
 				int newPitch = atoi( args[2] );
 				if (newPitch < 1)
 					newPitch = 1;
-				if (newPitch > 1000)
-					newPitch = 1000;
+				if (newPitch > 255)
+					newPitch = 255;
 					
 				g_PlayerFuncs.SayText(plr, "Your voice pitch has been set to " + newPitch + "\n");
 				
 				state.pitch = newPitch;
 				return true;
 			}
+			
 			g_PlayerFuncs.SayText(plr, "Voice command usage:\n");
 			g_PlayerFuncs.SayText(plr, 'Say ".vc X" top open a command menu (where X = 1 or 2).\n');
 			g_PlayerFuncs.SayText(plr, 'Say ".vc global X" to open a command menu in global mode (everyone can hear you across the map).\n');
 			g_PlayerFuncs.SayText(plr, 'Say ".vc voice" to select a different voice.\n');
-			g_PlayerFuncs.SayText(plr, 'Say ".vc pitch X" to change your voice pitch (where X = 1-1000).\n');
+			g_PlayerFuncs.SayText(plr, 'Say ".vc pitch X" to change your voice pitch (where X = 1-255).\n');
 			return true;
 		}
 	}
