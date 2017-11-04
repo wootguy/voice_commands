@@ -44,6 +44,7 @@ class PlayerState
 	CTextMenu@ menu;
 	string talker_id;  // voice this player is using
 	int pitch; 		   // voice pitch adjustment (100 = normal, range = 1-1000)
+	float volume;	   // volume of all voice commands (spoken or heard)
 	int lastChatMenu;  // if non-zero, player currently has a chat menu open
 	int globalInvert;  // set to 1 when a chat menu was opened 3 times (inverse global state)
 	string lastSample; // store the last soundFile played so we can stop it later
@@ -76,6 +77,7 @@ array<string> g_talkers_ordered; // used to display talkers/voices in the correc
 array<CommandGroup@> g_commands; // all of em
 string command_menu_1_title = "Actions:";
 string command_menu_2_title = "Responses:";
+array<EHandle> g_players;
 
 CCVar@ g_enable_gain;
 CCVar@ g_global_gain;
@@ -314,6 +316,20 @@ void loadVoiceData()
 	
 }
 
+void updatePlayerList()
+{
+	g_players.resize(0);
+	CBaseEntity@ ent = null;
+	do {
+		@ent = g_EntityFuncs.FindEntityByClassname(ent, "player"); 
+		if (ent !is null)
+		{
+			EHandle e = ent;
+			g_players.insertLast(e);
+		}
+	} while (ent !is null);
+}
+
 // Returns the monster that the player is looking directly at, if any.
 CBaseMonster@ getMonsterLookingAt(CBasePlayer@ plr, float maxDistance)
 {
@@ -443,39 +459,28 @@ void voiceMenuCallback(CTextMenu@ menu, CBasePlayer@ plr, int page, const CTextM
 	if (!g_enable_gain.GetBool())
 		gain = 1;
 	
-	// Stop the last sound file in case its still playing
-	if (state.lastSample.Length() > 0)
-		for (uint i = 0; i < channels.length(); i++)
-			g_SoundSystem.StopSound(plr.edict(), channels[i], state.lastSample, false);
+	updatePlayerList();
 	
-	if (global) 
+	
+	for (uint i = 0; i < g_players.length(); i++)
 	{
-		// play sound through a global entity so everyone can hear it
-		string ambientName = "vc__" + phrase.soundFile;
-		dictionary keyvalues;
-		keyvalues["targetname"] = ambientName;
-		keyvalues["message"] = phrase.soundFile;
-		keyvalues["pitch"] = string(state.pitch);
-		keyvalues["spawnflags"] = "49";
-		keyvalues["playmode"] = "1";
-		keyvalues["health"] = string(vol * 10);
-		
-		array<CBaseEntity@> ambients;
-		for (uint g = 0; g < gain; g++)
-			ambients.insertLast( g_EntityFuncs.CreateEntity( "ambient_generic", keyvalues, true ) );
-		
-		g_EntityFuncs.FireTargets(ambientName, null, null, USE_ON);
-		
-		// delete the entities we just created
-		for (uint g = 0; g < ambients.length(); g++) 
-			if (ambients[g] !is null)
-				g_EntityFuncs.Remove(ambients[g]);
-	}
-	else
-	{
-		// play the sound locally, possibly on multiple channels to increase volume
-		for (uint i = 0; i < gain; i++) {
-			g_SoundSystem.PlaySound(plr.edict(), channels[i], phrase.soundFile, vol, 1.0f, 0, state.pitch, 0, true, plr.pev.origin);
+		if (g_players[i])
+		{
+			CBaseEntity@ listener = g_players[i];
+			PlayerState@ listenerState = getPlayerState(cast<CBasePlayer@>(listener));
+			CBasePlayer@ speaker = global ? cast<CBasePlayer@>(listener) : plr;
+			float listenVol = listenerState.volume*vol;
+			float attn = global ? ATTN_NONE : 1.0f;
+			if (listenVol <= 0)
+				continue;
+			
+			// Stop the last sound file in case its still playing (played gain=5 sound followed by gain=2)
+			if (state.lastSample.Length() > 0)
+				for (uint g = 0; g < channels.length(); g++)
+					g_SoundSystem.StopSound(speaker.edict(), channels[g], state.lastSample, false);
+			
+			for (uint g = 0; g < gain; g++)
+				g_SoundSystem.PlaySound(speaker.edict(), channels[g], phrase.soundFile, listenVol, attn, 0, state.pitch, listener.entindex());
 		}
 	}
 	
@@ -534,6 +539,7 @@ PlayerState@ getPlayerState(CBasePlayer@ plr)
 		state.lastChatMenu = 0;
 		state.globalInvert = 0;
 		state.pitch = 100;
+		state.volume = 1.0f;
 		state.lastChatTime = 0;
 		player_states[steamId] = state;
 	}
@@ -636,12 +642,24 @@ bool doCommand(CBasePlayer@ plr, const CCommand@ args)
 				state.pitch = newPitch;
 				return true;
 			}
+			if ( args[1] == "vol" and args.ArgC() > 2 )
+			{		
+				int newVol = atoi( args[2] );
+				if (newVol < 0)
+					newVol = 0;
+				if (newVol > 100)
+					newVol = 100;
+				
+				g_PlayerFuncs.SayText(plr, "Voice command volume set to " + newVol + "%\n");
+				state.volume = float(newVol) / 100.0f;
+				return true;
+			}
 			
 			g_PlayerFuncs.SayText(plr, "Voice command usage:\n");
-			g_PlayerFuncs.SayText(plr, 'Say ".vc X" top open a command menu (where X = 1 or 2).\n');
-			g_PlayerFuncs.SayText(plr, 'Say ".vc global X" to open a command menu in global mode (everyone can hear you across the map).\n');
+			g_PlayerFuncs.SayText(plr, 'Say ".vc X" or ".vc global X" to open a command menu (where X = 1 or 2).\n');
 			g_PlayerFuncs.SayText(plr, 'Say ".vc voice" to select a different voice.\n');
 			g_PlayerFuncs.SayText(plr, 'Say ".vc pitch X" to change your voice pitch (where X = 1-255).\n');
+			g_PlayerFuncs.SayText(plr, 'Say ".vc vol X" to adjust all voice volumes (where X = 0-100).\n');
 			return true;
 		}
 	}
