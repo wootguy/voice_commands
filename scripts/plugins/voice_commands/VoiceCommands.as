@@ -461,7 +461,6 @@ void voiceMenuCallback(CTextMenu@ menu, CBasePlayer@ plr, int page, const CTextM
 	
 	updatePlayerList();
 	
-	
 	for (uint i = 0; i < g_players.length(); i++)
 	{
 		if (g_players[i])
@@ -474,13 +473,13 @@ void voiceMenuCallback(CTextMenu@ menu, CBasePlayer@ plr, int page, const CTextM
 			if (listenVol <= 0)
 				continue;
 			
-			// Stop the last sound file in case its still playing (played gain=5 sound followed by gain=2)
-			if (state.lastSample.Length() > 0)
-				for (uint g = 0; g < channels.length(); g++)
-					g_SoundSystem.StopSound(speaker.edict(), channels[g], state.lastSample, false);
-			
-			for (uint g = 0; g < gain; g++)
-				g_SoundSystem.PlaySound(speaker.edict(), channels[g], phrase.soundFile, listenVol, attn, 0, state.pitch, listener.entindex());
+			for (uint g = 0; g < channels.length(); g++)
+			{
+				if (g < gain)
+					g_SoundSystem.PlaySound(plr.edict(), channels[g], phrase.soundFile, listenVol, attn, 0, state.pitch, listener.entindex());
+				else
+					g_SoundSystem.StopSound(plr.edict(), channels[g], state.lastSample, false);
+			}
 		}
 	}
 	
