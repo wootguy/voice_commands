@@ -84,6 +84,8 @@ CCVar@ g_global_gain;
 CCVar@ g_monster_reactions;
 CCVar@ g_command_delay;
 CCVar@ g_debug_mode;
+CCVar@ g_enable_global;
+CCVar@ g_falloff;
 
 dictionary player_states; // persistent-ish player data, organized by steam-id or username if on a LAN server, values are @PlayerState
 bool debug_log = false;
@@ -111,6 +113,8 @@ void PluginInit()
 	@g_monster_reactions = CCVar("monster_reactions", 1, "Monsters respond to player voice commands (e.g. follow player, detect noise).", ConCommandFlag::AdminOnly);
 	@g_command_delay = CCVar("delay", 2.5, "Delay between sending commands, in seconds", ConCommandFlag::AdminOnly);
 	@g_debug_mode = CCVar("debug", 0, "If set to 1, sound details will be printed in chat and sounds will not play in a random order.", ConCommandFlag::AdminOnly);
+	@g_enable_global = CCVar("enable_global", 1, "Allow global commands", ConCommandFlag::AdminOnly);
+	@g_falloff = CCVar("falloff", 1.0, "Adjusts how far sounds can be heard (1 = normal, 0 = infinite)", ConCommandFlag::AdminOnly);
 }
 
 void MapInit()
@@ -469,7 +473,7 @@ void voiceMenuCallback(CTextMenu@ menu, CBasePlayer@ plr, int page, const CTextM
 			PlayerState@ listenerState = getPlayerState(cast<CBasePlayer@>(listener));
 			CBasePlayer@ speaker = global ? cast<CBasePlayer@>(listener) : plr;
 			float listenVol = listenerState.volume*vol;
-			float attn = global ? ATTN_NONE : 1.0f;
+			float attn = global ? ATTN_NONE : g_falloff.GetFloat();
 			if (listenVol <= 0)
 				continue;
 			
@@ -550,10 +554,13 @@ void openChatMenu(PlayerState@ state, CBasePlayer@ plr, int menuId, bool global)
 	state.initMenu(plr, voiceMenuCallback, state.lastChatMenu != 0);
 	
 	string menuTitle = (menuId == 1) ? command_menu_1_title : command_menu_2_title;
+	
 	if (state.lastChatMenu < 0)
 		global = !global;
 	if (abs(state.lastChatMenu) != menuId)
 		global = false; // don't continue the global loop when changing menus
+	global = global && g_enable_global.GetBool();
+	
 	if (global)
 		menuTitle = "(Global) " + menuTitle;
 	state.menu.SetTitle(menuTitle + "\n");
