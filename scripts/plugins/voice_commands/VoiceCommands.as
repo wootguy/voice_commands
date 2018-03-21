@@ -129,8 +129,6 @@ void MapInit()
 	for (uint i = 0; i < g_commands.length(); i++)
 		g_Game.PrecacheModel(g_commands[i].sprite);
 	
-	g_Game.PrecacheGeneric("gfx/env/barrendesertbk.tga");
-	
 	// Reset temporary vars on map change
 	array<string>@ states = player_states.getKeys();
 	for (uint i = 0; i < states.length(); i++)
