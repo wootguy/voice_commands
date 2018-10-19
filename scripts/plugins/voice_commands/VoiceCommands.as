@@ -77,6 +77,8 @@ array<string> g_talkers_ordered; // used to display talkers/voices in the correc
 array<CommandGroup@> g_commands; // all of em
 string command_menu_1_title = "Actions:";
 string command_menu_2_title = "Responses:";
+string command_menu_3_title = "Something:";
+string command_menu_4_title = "asdf:";
 array<EHandle> g_players;
 
 CCVar@ g_enable_gain;
@@ -161,6 +163,8 @@ enum parse_mode {
 	PARSE_VOICES,
 	PARSE_CMDS_1,
 	PARSE_CMDS_2,
+	PARSE_CMDS_3,
+	PARSE_CMDS_4,
 	PARSE_SPECIAL_CMDS,
 }
 
@@ -199,6 +203,14 @@ void loadConfig()
 				parseMode = PARSE_CMDS_2;
 				continue;
 			}
+			if (line == "[command_menu_3]") {
+				parseMode = PARSE_CMDS_3;
+				continue;
+			}
+			if (line == "[command_menu_4]") {
+				parseMode = PARSE_CMDS_4;
+				continue;
+			}
 			if (line == "[special_commands]") {
 				parseMode = PARSE_SPECIAL_CMDS;
 				continue;
@@ -220,6 +232,10 @@ void loadConfig()
 					command_menu_1_title = settingValue[1];
 				if (settingValue[0] == "command_menu_2_title")
 					command_menu_2_title = settingValue[1];
+				if (settingValue[0] == "command_menu_3_title")
+					command_menu_3_title = settingValue[1];
+				if (settingValue[0] == "command_menu_4_title")
+					command_menu_4_title = settingValue[1];
 			}
 			else if (parseMode == PARSE_VOICES)
 			{
@@ -227,7 +243,7 @@ void loadConfig()
 				g_talkers_ordered.insertLast(line);
 				//g_Game.AlertMessage( at_console, "Got voice: '" + line + "'\n");
 			}
-			else if (parseMode == PARSE_CMDS_1 or parseMode == PARSE_CMDS_2 or parseMode == PARSE_SPECIAL_CMDS)
+			else if (parseMode == PARSE_CMDS_1 or parseMode == PARSE_CMDS_2 or parseMode == PARSE_CMDS_3 or parseMode == PARSE_CMDS_4 or parseMode == PARSE_SPECIAL_CMDS)
 			{
 				array<string>@ cmd_values = line.Split(":");
 				if (cmd_values.length() != 2) 
@@ -240,6 +256,10 @@ void loadConfig()
 				CommandGroup c(cmd_values[0], cmd_values[1], 1);
 				if (parseMode == PARSE_CMDS_2)
 					c.menu = 2;
+				else if (parseMode == PARSE_CMDS_3)
+					c.menu = 3;
+				else if (parseMode == PARSE_CMDS_4)
+					c.menu = 4;
 				else if (parseMode == PARSE_SPECIAL_CMDS)
 					c.menu = 0;
 					
@@ -551,7 +571,14 @@ void openChatMenu(PlayerState@ state, CBasePlayer@ plr, int menuId, bool global)
 {
 	state.initMenu(plr, voiceMenuCallback, state.lastChatMenu != 0);
 	
-	string menuTitle = (menuId == 1) ? command_menu_1_title : command_menu_2_title;
+	string menuTitle = command_menu_1_title;
+	switch(menuId)
+	{
+		case 1: menuTitle = command_menu_1_title; break;
+		case 2: menuTitle = command_menu_2_title; break;
+		case 3: menuTitle = command_menu_3_title; break;
+		case 4: menuTitle = command_menu_4_title; break;
+	}
 	
 	if (state.lastChatMenu < 0)
 		global = !global;
@@ -608,14 +635,14 @@ bool doCommand(CBasePlayer@ plr, const CCommand@ args)
 	{
 		if ( args[0] == ".vc" )
 		{
-			if ( args[1] == "1" || args[1] == "2" )
+			if ( args[1] == "1" || args[1] == "2" || args[1] == "3" || args[1] == "4" )
 			{
-				openChatMenu(state, plr, args[1] == "1" ? 1 : 2, false);
+				openChatMenu(state, plr, atoi(args[1]), false);
 				return true;
 			}
-			if ( args[1] == 'global' and args.ArgC() > 2 and (args[2] == "1" || args[2] == "2") )
+			if ( args[1] == 'global' and args.ArgC() > 2 and (args[2] == "1" || args[2] == "2" || args[1] == "3" || args[1] == "4") )
 			{
-				openChatMenu(state, plr, args[2] == "1" ? 1 : 2, true);
+				openChatMenu(state, plr, atoi(args[2]), true);
 				return true;
 			}
 			if ( args[1] == "voice" )
