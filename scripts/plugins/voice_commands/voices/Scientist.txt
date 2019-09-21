@@ -2,10 +2,13 @@
 2 : scientist/absolutely.wav
 2 : scientist/alright.wav
 2 : scientist/ibelieveso.wav
+3 : scientist/imsure.wav
 2 : scientist/ofcourse.wav
 3 : scientist/right.wav
 2 : scientist/yes.wav
+2 : scientist/yes2.wav
 3 : scientist/yes3.wav
+2 : scientist/positively.wav
 
 [No]
 2 : scientist/absolutelynot.wav
@@ -23,7 +26,10 @@
 2 : scientist/ahfreeman.wav
 2 : scientist/c1a0_sci_gm.wav
 2 : scientist/c1a0_sci_gm1.wav
+2 : scientist/corporal.wav
+2 : scientist/fix.wav
 3 : scientist/freeman.wav
+2 : scientist/freemanalive.wav
 2 : scientist/goodtoseeyou.wav
 2 : scientist/greetings.wav
 2 : scientist/greetings2.wav
@@ -33,27 +39,46 @@
 2 : scientist/hellofromlab.wav
 2 : scientist/helloladies.wav
 2 : scientist/hellothere.wav
+2 : scientist/saved.wav
+2 : scientist/sc_hello0.wav
+2 : scientist/sc_hello1.wav
+2 : scientist/sc_hello2.wav
 
 [Cheer]
 2 : voice_commands/scientist/cheer1.ogg
 2 : voice_commands/scientist/cheer2.ogg
 3 : voice_commands/scientist/cheer3.ogg
 2 : voice_commands/scientist/cheer4.ogg
+2 : scientist/asexpected.ogg
 
 [Follow me]
 2 : scientist/okgetout.wav
 2 : scientist/letsgo.wav
+2 : scientist/c3a2_sci_uphere_alt.wav
+3 : scientist/overhere.wav
+2 : scientist/letstrythis.wav
 
 [I'm with you]
 3 : scientist/excellentteam.wav
 2 : scientist/icanhelp.wav
+2 : scientist/c1a3_sci_1man.wav
 2 : scientist/leadtheway.wav
 2 : scientist/letmehelp.wav
 2 : scientist/sc_hello4.wav
 2 : scientist/sc_ok2.wav
 3 : scientist/yesletsgo.wav
+2 : scientist/fine.wav
+2 : scientist/heal5.wav
+2 : scientist/hopeyouknow.wav
+2 : scientist/okihope.wav
+2 : scientist/rightwayout.wav
+2 : scientist/sc_ok0.wav
+2 : scientist/sc_ok1.wav
+2 : scientist/yesihope.wav
 
 [Thanks]
+2 : scientist/c1a3_sci_atlast.wav
+2 : scientist/c1a3_sci_thankgod.wav
 2 : voice_commands/scientist/thanks1.ogg
 3 : voice_commands/scientist/thanks2.ogg
 
@@ -62,9 +87,14 @@
 2 : voice_commands/scientist/welcome1.ogg
 
 [Help]
-3 : voice_commands/scientist/help1.ogg
+2 : voice_commands/scientist/help1.ogg
 2 : voice_commands/scientist/help2.ogg
 2 : scientist/sc_accident3.wav
+2 : scientist/c1a2_sci_dangling.wav
+1 : scientist/c1a4_sci_tent.wav
+2 : scientist/c2a4_sci_alldie.wav
+2 : scientist/iwoundedbad.wav
+2 : scientist/sci_fear12.wav
 
 [Sorry]
 3 : voice_commands/scientist/sorry1.ogg
@@ -74,29 +104,95 @@
 [Chit-chat]
 2 : scientist/administrator.wav
 2 : scientist/alienappeal.wav
+2 : scientist/alientrick.wav
+2 : scientist/allnominal.wav
 2 : scientist/analysis.wav
 2 : scientist/announcer.wav
+2 : scientist/areyouthink.wav
+2 : scientist/assist.wav
 2 : scientist/beverage.wav
 2 : scientist/bloodsample.wav
+2 : scientist/c1a0_sci_bigday.wav
+2 : scientist/c1a0_sci_lock1a.wav
+3 : scientist/c1a2_sci_darkroom.wav
+3 : scientist/c1a2_sci_transm.wav
+2 : scientist/c1a4_sci_pwroff.wav
+2 : scientist/c1a4_sci_trainend.wav
+2 : scientist/c2a4_sci_scanner.wav
 2 : scientist/cascade.wav
+2 : scientist/catchone.wav
 2 : scientist/chaostheory.wav
+2 : scientist/checkatten.wav
+2 : scientist/correcttheory.wav
 2 : scientist/chimp.wav
+2 : scientist/containfail.wav
+2 : scientist/crowbar.wav
+2 : scientist/delayagain.wav
+2 : scientist/dinner.wav
 2 : scientist/donuteater.wav
+2 : scientist/doyousmell.wav
+2 : scientist/evergetout.wav
+3 : scientist/everseen.wav
+3 : scientist/fascinating.wav
+2 : scientist/forcefield_b.wav
+2 : scientist/fusionshunt.wav
+2 : scientist/getoutalive.wav
 2 : scientist/goodpaper.wav
+2 : scientist/headcrab.wav
+2 : scientist/hideglasses.wav
 2 : scientist/hopenominal.wav
+2 : scientist/nothostile.wav
+2 : scientist/hearsomething.wav
+3 : scientist/howinteresting.wav
 2 : scientist/hungryyet.wav
+2 : scientist/improbable.wav
 2 : scientist/inmesstoo.wav
 2 : scientist/ipredictedthis.wav
+2 : scientist/keller.wav
+2 : scientist/koso.wav
+2 : scientist/lambdalab.wav
+2 : scientist/limitsok.wav
 2 : scientist/luckwillchange.wav
+3 : scientist/needsleep.wav
+3 : scientist/neverseen.wav
+2 : scientist/newsample.wav
+2 : scientist/nogrant.wav
+2 : scientist/organicmatter.wav
+3 : scientist/peculiarmarks.wav
+2 : scientist/peculiarodor.wav
+2 : scientist/perfectday.wav
+2 : scientist/purereadings.wav
 2 : scientist/recalculate.wav
+2 : scientist/rescueus.wav
+3 : scientist/reportflux.wav
 2 : scientist/runtest.wav
+2 : scientist/rumorclean.wav
+2 : scientist/sc_sec2_admin1.wav
+2 : scientist/seencup.wav
 2 : scientist/shakeunification.wav
+2 : scientist/shutdownchart.wav
 2 : scientist/simulation.wav
 2 : scientist/smellburn.wav
+3 : scientist/somethingfoul.wav
 2 : scientist/softethics.wav
+2 : scientist/sci_somewhere.wav
 3 : scientist/spinals.wav
 2 : scientist/statusreport.wav
+3 : scientist/stench.wav
+2 : scientist/stimulating.wav
 2 : scientist/tunnelcalc.wav
+2 : scientist/thatsmell.wav
+2 : scientist/thatsodd.wav
+2 : scientist/ties.wav
+2 : scientist/tram.wav
+3 : scientist/tunedtoday.wav
+2 : scientist/underbarrel.wav
+2 : scientist/undertest.wav
+3 : scientist/uselessphd.wav
+2 : scientist/whatissound.wav
+2 : scientist/whatnext.wav
+2 : scientist/whoresponsible.wav
+2 : scientist/waithere.wav
 2 : scientist/weartie.wav
 2 : scientist/xena.wav
 2 : scientist/sunsets.wav
@@ -109,19 +205,21 @@
 2 : scientist/sc_pok1.wav
 2 : scientist/sc_pok3.wav
 2 : scientist/sc_pok4.wav
+2 : scientist/sc_pok5.wav
 2 : scientist/sc_pok6.wav
 2 : scientist/youlookbad.wav
 
 [Run away]
 2 : voice_commands/scientist/run1.ogg
 2 : voice_commands/scientist/run2.ogg
-1 : scientist/c1a2_sci_1zomb.wav
+2 : scientist/c1a2_sci_1zomb.wav
 1 : scientist/c1a3_sci_silo2a.wav
 1 : scientist/dontwantdie.wav
 1 : scientist/gottogetout.wav
-2 : scientist/madness.wav
 2 : scientist/sc_power2.wav
+2 : scientist/sci_fear7.wav
 1 : scientist/sci_fear8.wav
+2 : scientist/sci_fear13.wav
 1 : scientist/sci_fear14.wav
 1 : scientist/sci_fear15.wav
 1 : scientist/scream01.wav
@@ -141,10 +239,20 @@
 1 : scientist/c3a2_sci_notyet.wav
 2 : scientist/dontgothere.wav
 1 : scientist/noplease.wav
+2 : scientist/scream10.wav
+2 : scientist/scream11.wav
+1 : scientist/scream12.wav
+2 : scientist/scream13.wav
+2 : scientist/sci_pain3.wav
 2 : scientist/sci_pain9.wav
 2 : scientist/whatyoudoing.wav
 1 : scientist/c3a2_sci_fool.wav
 2 : scientist/c1a0_sci_stayback.wav
+2 : scientist/sc_pok0.wav
+2 : scientist/sci_alone.wav
+3 : scientist/sci_busy.wav
+3 : scientist/sci_bother.wav
+3 : scientist/lowervoice.wav
 
 [Dead]
 2 : scientist/sci_die1.wav
@@ -152,9 +260,18 @@
 2 : scientist/sci_die3.wav
 2 : scientist/sci_die4.wav
 2 : scientist/sci_dragoff.wav
-2 : scientist/sci_pain1.wav
+1 : scientist/sci_pain1.wav
+1 : scientist/sci_pain2.wav
 1 : scientist/sci_pain4.wav
 2 : scientist/sci_pain5.wav
+2 : scientist/sci_pain6.wav
 1 : scientist/sci_pain7.wav
+1 : scientist/sci_pain8.wav
+1 : scientist/sci_pain10.wav
 1 : scientist/scream03.wav
+1 : scientist/scream09.wav
 1 : scientist/scream21.wav
+1 : scientist/scream24.wav
+1 : scientist/iwounded2.wav
+2 : scientist/nooo.wav
+2 : scientist/c1a2_sci_5zomb.wav
