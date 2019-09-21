@@ -275,6 +275,3 @@
 1 : scientist/iwounded2.wav
 2 : scientist/nooo.wav
 2 : scientist/c1a2_sci_5zomb.wav
-
-scientist/c1a2_sci_5zomb.wav
-vc/s/c1a2_sci_5zomb.wav
