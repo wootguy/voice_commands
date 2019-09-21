@@ -49,7 +49,7 @@
 2 : voice_commands/scientist/cheer2.ogg
 3 : voice_commands/scientist/cheer3.ogg
 2 : voice_commands/scientist/cheer4.ogg
-2 : scientist/asexpected.ogg
+2 : scientist/asexpected.wav
 
 [Follow me]
 2 : scientist/okgetout.wav
@@ -275,3 +275,6 @@
 1 : scientist/iwounded2.wav
 2 : scientist/nooo.wav
 2 : scientist/c1a2_sci_5zomb.wav
+
+scientist/c1a2_sci_5zomb.wav
+vc/s/c1a2_sci_5zomb.wav
