@@ -75,10 +75,11 @@ dictionary g_talkers; // all the voice data
 array<Phrase@> g_all_phrases; // for straight-forward precaching, duplicates the data in g_talkers
 array<string> g_talkers_ordered; // used to display talkers/voices in the correct order
 array<CommandGroup@> g_commands; // all of em
-string command_menu_1_title = "Actions:";
-string command_menu_2_title = "Responses:";
-string command_menu_3_title = "Something:";
-string command_menu_4_title = "asdf:";
+array<string> command_menu_titles;
+string command_menu_1_title;
+string command_menu_2_title;
+string command_menu_3_title;
+string command_menu_4_title;
 array<EHandle> g_players;
 
 CCVar@ g_enable_gain;
@@ -88,6 +89,7 @@ CCVar@ g_command_delay;
 CCVar@ g_debug_mode;
 CCVar@ g_enable_global;
 CCVar@ g_falloff;
+CCVar@ g_use_sentences;
 
 dictionary player_states; // persistent-ish player data, organized by steam-id or username if on a LAN server, values are @PlayerState
 bool debug_log = false;
@@ -107,8 +109,9 @@ void PluginInit()
 	g_Hooks.RegisterHook( Hooks::Player::ClientSay, @ClientSay );	
 	g_Hooks.RegisterHook( Hooks::Game::MapChange, @MapChange );
 	
-	loadConfig();		
+	loadConfig();
 	loadVoiceData();
+	loadDefaultSentences();
 	
 	@g_enable_gain = CCVar("enable_gain", 1, "Amplify sounds by playing multiple instances at once (occasionally plays sounds off-sync).", ConCommandFlag::AdminOnly);
 	@g_global_gain = CCVar("global_gain", 0, "Extra volume applied to all sound files (0-6). Has no effect if gain is disabled.", ConCommandFlag::AdminOnly);
@@ -117,6 +120,7 @@ void PluginInit()
 	@g_debug_mode = CCVar("debug", 0, "If set to 1, sound details will be printed in chat and sounds will not play in a random order.", ConCommandFlag::AdminOnly);
 	@g_enable_global = CCVar("enable_global", 1, "Allow global commands", ConCommandFlag::AdminOnly);
 	@g_falloff = CCVar("falloff", 1.0, "Adjusts how far sounds can be heard (1 = normal, 0 = infinite)", ConCommandFlag::AdminOnly);
+	@g_use_sentences = CCVar("use_sentences", 1, "Set this to 0 for maps that override custom sentences and break voice commands", ConCommandFlag::AdminOnly);
 }
 
 void MapInit()
@@ -124,8 +128,16 @@ void MapInit()
 	g_Game.AlertMessage( at_console, "Precaching " + g_all_phrases.length() + " sounds and " + g_commands.length() + " sprites\n");
 	
 	for (uint i = 0; i < g_all_phrases.length(); i++) {
-		g_SoundSystem.PrecacheSound(g_all_phrases[i].soundFile);
-		g_Game.PrecacheGeneric("sound/" + g_all_phrases[i].soundFile); // yay, no more .res file hacking
+		string soundFile = g_all_phrases[i].soundFile;
+		if (!g_use_sentences.GetBool() and g_all_phrases[i].soundFile.Length() > 0 and g_all_phrases[i].soundFile[0] == "!") {
+			g_default_sentences.get(soundFile, soundFile);
+			println("LEL PRECACHING: " + soundFile);
+		}
+		if (soundFile.Length() > 0 and soundFile[0] != "!") {
+			g_SoundSystem.PrecacheSound(soundFile);
+			g_Game.PrecacheGeneric("sound/" + soundFile); // yay, no more .res file hacking
+		}
+		
 	}
 		
 	for (uint i = 0; i < g_commands.length(); i++)
@@ -166,6 +178,46 @@ enum parse_mode {
 	PARSE_CMDS_3,
 	PARSE_CMDS_4,
 	PARSE_SPECIAL_CMDS,
+}
+
+dictionary g_default_sentences;
+
+void loadDefaultSentences()
+{
+	string fpath = plugin_path + "default_sentences.txt";
+	dictionary maps;
+	File@ f = g_FileSystem.OpenFile( fpath, OpenFile::READ );
+	if (f is null or !f.IsOpen())
+	{
+		println("Failed to open " + fpath);
+		return;
+	}
+	
+	int sentenceCount = 0;
+	string line;
+	while( !f.EOFReached() )
+	{
+		f.ReadLine(line);
+		line.Trim();
+		line.Trim("\t");
+		if (line.Length() == 0 or line.Find("//") == 0)
+			continue;
+			
+		array<string> parts = line.Split(" ");
+		if (parts.length() > 1) {
+			if (!g_default_sentences.exists(parts[0]))
+				continue; // don't care about sentences not used by any voice
+			if (parts[1].Find("(") != String::INVALID_INDEX)
+				continue; // complex sentences not supported yet (or ever probably)
+			
+			string sentenceName = "!" + parts[0];
+			string soundFile = parts[1] + ".wav"; // I doubt there's even one default sentence that doesn't use .wav
+			sentenceCount++;
+			g_default_sentences[sentenceName] = soundFile;
+		}
+	}
+	
+	//println("Loaded " + sentenceCount + " default sentences");
 }
 
 void loadConfig()
@@ -324,6 +376,9 @@ void loadVoiceData()
 						p.id = phraseIdNum++;
 						phrases.insertLast( p );
 						g_all_phrases.insertLast(@p);
+						if (params[1].Length() > 1 and params[1][0] == "!") {
+							g_default_sentences[params[1].SubString(1)] = true; // mark this for sentence loading later
+						}
 					}
 				}
 				//g_Game.AlertMessage( at_console, line + "\n");
@@ -483,6 +538,11 @@ void voiceMenuCallback(CTextMenu@ menu, CBasePlayer@ plr, int page, const CTextM
 	
 	updatePlayerList();
 	
+	string soundFile = phrase.soundFile;
+	if (!g_use_sentences.GetBool() and soundFile.Length() > 0 and soundFile[0] == "!") {
+		g_default_sentences.get(soundFile, soundFile); // get the default sound file for the sentence
+	}
+	
 	for (uint i = 0; i < g_players.length(); i++)
 	{
 		if (g_players[i])
@@ -498,14 +558,14 @@ void voiceMenuCallback(CTextMenu@ menu, CBasePlayer@ plr, int page, const CTextM
 			for (uint g = 0; g < channels.length(); g++)
 			{
 				if (g < gain)
-					g_SoundSystem.PlaySound(plr.edict(), channels[g], phrase.soundFile, listenVol, attn, 0, state.pitch, listener.entindex());
+					g_SoundSystem.PlaySound(plr.edict(), channels[g], soundFile, listenVol, attn, 0, state.pitch, listener.entindex());
 				else
 					g_SoundSystem.StopSound(plr.edict(), channels[g], state.lastSample, false);
 			}
 		}
 	}
 	
-	state.lastSample = phrase.soundFile;
+	state.lastSample = soundFile;
 	
 	if (global)
 		g_PlayerFuncs.SayTextAll(plr, "(voice) " + plr.pev.netname + ": " + phraseId + "\n");
@@ -529,7 +589,7 @@ void voiceMenuCallback(CTextMenu@ menu, CBasePlayer@ plr, int page, const CTextM
 	}
 	
 	if (g_debug_mode.GetBool())
-		g_PlayerFuncs.SayTextAll(plr, "Gain: " + gain + ", Volume: " + vol + ", Pitch: " + state.pitch + ", Sound File: " + phrase.soundFile + "\n");
+		g_PlayerFuncs.SayTextAll(plr, "Idx: " + idx + "/" + (phrases.length()-1) + " Gain: " + gain + ", Volume: " + vol + ", Pitch: " + state.pitch + ", Sound File: " + soundFile + "\n");
 }
 
 // handles player voice selection
