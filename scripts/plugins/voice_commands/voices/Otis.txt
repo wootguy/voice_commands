@@ -1,100 +1,112 @@
 [Yes]
-5 : otis/suppose.wav
-4 : otis/yes.wav
-4 : otis/yessir.wav
-4 : otis/youbet.wav
+5 : !OT_ANSWER15
+4 : !OT_ANSWER0
+4 : !OT_ANSWER1
+4 : !OT_ANSWER2
 
 [No]
-4 : otis/dontguess.wav
-4 : otis/no.wav
-4 : otis/nope.wav
-4 : otis/nosir.wav
-4 : otis/noway.wav
+4 : !OT_ANSWER10
+4 : !OT_ANSWER9
+4 : !OT_ANSWER12
+4 : !OT_ANSWER13
+4 : !OT_ANSWER6
+4 : !OT_ANSWER7
 
 [Hello]
-4 : otis/hello.wav
-3 : otis/hey.wav
-3 : otis/hiya.wav
-3 : otis/ot_intro_hello1.wav
+4 : !OT_HELLO0
+3 : !OT_HELLO3
+3 : !OT_HELLO2
+3 : !OT_1
 
 [Cheer]
-3 : otis/another.wav
-3 : otis/gotone.wav
-3 : otis/seethat.wav
+3 : !OT_KILL1
+3 : !OT_KILL0
+3 : !OT_KILL3
 3 : voice_commands/otis/cheer1.ogg
 
 [Follow me]
-4 : otis/letsgo.wav
-4 : otis/together.wav
+4 : !OT_OK3
+4 : !OT_OK2
 
 [I'm with you]
-4 : otis/behind.wav
-4 : otis/diealone.wav
-4 : otis/live.wav
-4 : otis/soldier.wav
-4 : otis/teamup.wav
+4 : !OT_ATTACK0
+4 : !OT_OK4
+4 : !OT_OK1
+4 : !OT_HELLO1
+4 : !OT_OK6
+4 : !OT_OK5
+4 : !OT_TRUSTYA
+4 : !OT_QUESTION1
+4 : !OT_ATTACK2
 
 [Thanks]
-2 : otis/of1a1_ot04.wav
+2 : !OT_FINDMORE
+4 : !OT_OK0
 
 [You're welcome]
-4 : otis/alright.wav
-4 : otis/gladof.wav
-4 : otis/yeah.wav
+4 : !OT_ANSWER3
+4 : !OT_QUESTION3
+4 : !OT_ANSWER5
 
 [Help]
-4 : otis/notalone.wav
+4 : !OT_WAIT6
+4 : otis/yourside.wav
 
 [Sorry]
 3 : voice_commands/otis/sorry1.ogg
+2 : voice_commands/otis/sorry2.ogg
+4 : !OT_WAIT4
 
 [Chit-chat]
-4 : otis/aliencombat.wav
-4 : otis/aliens.wav
-4 : otis/beer.wav
+2 : otis/candy.wav
+4 : !OT_KILL2
+4 : !OT_QUESTION4
+4 : !OT_IDLE1
+4 : !OT_QUESTION0
 4 : otis/bigboned.wav
-4 : otis/bridge.wav
-4 : otis/chili.wav
-4 : otis/closet.wav
-4 : otis/cousin.wav
-4 : otis/dejavu.wav
-4 : otis/firepl.wav
-4 : otis/getanyworse.wav
-4 : otis/go_on.wav
-4 : otis/hearsomething.wav
-4 : otis/insurance.wav
-4 : otis/janitor.wav
-3 : otis/leftovers.wav
-4 : otis/mom.wav
-4 : otis/noise.wav
-4 : otis/onry.wav
-2 : otis/ot_intro_hello2.wav
-2 : otis/quarter.wav
-4 : otis/reputation.wav
-4 : otis/somethingmoves.wav
-4 : otis/standguard.wav
-4 : otis/talkmuch.wav
-4 : otis/wuss.wav
+4 : !OT_IDLE3
+4 : !OT_SMELL1
+4 : !OT_IDLE4
+4 : !OT_IDLE5
+4 : !OT_ANSWER20
+4 : !OT_KILL5
+4 : !OT_QUESTION2
+4 : !OT_WAIT1
+4 : !OT_HEAR0
+4 : !OT_CUREB
+4 : !OT_SMELL2
+3 : !OT_ATTACK1
+4 : !OT_IDLE0
+4 : !OT_QUESTION6
+4 : !OT_SHOT5
+2 : !OT_2
+2 : !OT_MISC1
+4 : !OT_QUESTION5
+4 : !OT_WAIT5
+4 : !OT_ANSWER19
+4 : !OT_IDLE2
 
 [Taunt]
-4 : otis/bring.wav
-4 : otis/bully.wav
-4 : otis/chump.wav
-4 : otis/die.wav
-4 : otis/dontmake.wav
-4 : otis/somuch.wav
+4 : !OT_KILL6
+4 : !OT_MAD0
+4 : !OT_SHOT1
+4 : !OT_ATTACK3
+4 : !OT_MAD2
+4 : !OT_MAD1
+4 : !OT_SCARED0
 
 [Run away]
+4 : otis/job.wav
 4 : otis/tooyoung.wav
-4 : otis/virgin.wav
+4 : !OT_WOUND1
 
 [Stop]
-3 : otis/damn.wav
-4 : otis/quitit.wav
+3 : !OT_SHOT3
+4 : !OT_SHOT4
 
 [Dead]
-2 : otis/imdead.wav
-2 : otis/hitbad.wav
-2 : otis/imhit.wav
-2 : otis/medic.wav
-2 : otis/scar.wav
+2 : !OT_MORTAL0
+2 : !OT_MORTAL1
+2 : !OT_WOUND0
+2 : !OT_CUREC
+2 : !OT_CUREA

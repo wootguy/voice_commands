@@ -1,5 +1,5 @@
 [Yes]
-3 : gman/of7a0_gm02.wav
+3 : !OF7A0_GM02
 5 : voice_commands/gman/yes1.ogg
 
 [No]
@@ -42,18 +42,17 @@
 3 : voice_commands/gman/chat2.ogg
 3 : voice_commands/gman/chat3.ogg
 3 : voice_commands/gman/chat4.ogg
-3 : voice_commands/gman/chat5.ogg
 
 [Taunt]
-3 : gman/gman_noreg.wav
-3 : gman/gman_choose1.wav
-3 : gman/gman_choose2.wav
+3 : !GM_REGRET
+3 : !GM_1CHOOSE
+3 : !GM_2CHOOSE
 
 [Run away]
 3 : voice_commands/gman/run1.ogg
 
 [Stop]
-3 : gman/gman_nowork.wav
+3 : !GM_WONTWORK
 3 : voice_commands/gman/stop1.ogg
 
 [Dead]
