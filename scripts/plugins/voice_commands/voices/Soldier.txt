@@ -1,95 +1,110 @@
 [Yes]
-2 : fgrunt/roger.wav
-2 : fgrunt/sir.wav
-2 : fgrunt/siryessir.wav
-2 : fgrunt/yes.wav
+2 : !FG_ANSWER0
+2 : !FG_OK5
+2 : !FG_YES
+2 : !FG_OK9
 
 [No]
-2 : fgrunt/no.wav
+2 : !FG_ANSWER2
 
 [Hello]
-2 : fgrunt/hellosir.wav
-2 : fgrunt/of5a1_fg01.wav
-2 : fgrunt/tosee.wav
+2 : !FG_POK2
+2 : !FG_MASKFREAKS
+2 : !FG_HELLO1
 
 [Cheer]
-2 : fgrunt/corporal.wav
-2 : fgrunt/now.wav
-2 : fgrunt/sniper.wav
-2 : fgrunt/talking.wav
+2 : fgrunt/allclear.wav
+2 : !FG_CLEAR1
+2 : !FG_KILL4
+2 : !FG_IDLE4
+2 : !FG_KILL2
+2 : !FG_KILL5
 3 : voice_commands/fgrunt/cheer1.ogg
 3 : voice_commands/fgrunt/cheer2.ogg
 2 : voice_commands/fgrunt/cheer3.ogg
 2 : voice_commands/fgrunt/cheer4.ogg
 
 [Follow me]
-2 : fgrunt/go.wav
-2 : fgrunt/move.wav
-2 : fgrunt/moveup.wav
-2 : fgrunt/of6a1_fg02.wav
-2 : fgrunt/rapidfire.wav
-2 : fgrunt/recon.wav
-2 : fgrunt/marines.wav
+2 : !FG_ATTACK9
+2 : !FG_CHARGE2
+2 : !FG_ATTACK8
+2 : !FG_LETSGO
+2 : !FG_ATTACK4
+2 : !FG_ATTACK3
+2 : !FG_ATTACK7
 
 [I'm with you]
-2 : fgrunt/command.wav
-2 : fgrunt/damage.wav
-2 : fgrunt/gotit.wav
-2 : fgrunt/notfail.wav
-2 : fgrunt/scout.wav
-2 : fgrunt/six.wav
+2 : !FG_OK7
+2 : !FG_OK0
+2 : !FG_OK3
+2 : !FG_OK8
+2 : !FG_WAIT2
+2 : !FG_OK1
+2 : !FG_TAUNT4
+2 : !FG_FIREPOWER
+2 : !TG_OPEN2
 
 [Thanks]
-2 : fgrunt/of2a5_fg04.wav
+2 : !FG_THANKSDOC
 2 : fgrunt/thanks.wav
 
 [You're welcome]
 2 : voice_commands/fgrunt/welcome1.ogg
-2 : fgrunt/tag.wav
+2 : !FG_KILL3
+2 : fgrunt/frosty.wav
 
 [Help]
-2 : fgrunt/backup.wav
+2 : !FG_MORTAL0
+2 : !FG_TAUNT5
+2 : !FG_ATTACK6
 2 : voice_commands/fgrunt/help1.ogg
 
 [Sorry]
 2 : voice_commands/fgrunt/sorry1.ogg
-2 : fgrunt/situations.wav
+2 : !TG_NOTOPEN3
 
 [Chit-chat]
-2 : fgrunt/babysitting.wav
-2 : fgrunt/bfeeling.wav
-2 : fgrunt/charge.wav
-2 : fgrunt/chicken.wav
-2 : fgrunt/coverup.wav
-2 : fgrunt/current.wav
-2 : fgrunt/disney.wav
-2 : fgrunt/dogs.wav
-2 : fgrunt/feel.wav
-2 : fgrunt/fubar.wav
-2 : fgrunt/lost.wav
-2 : fgrunt/mission.wav
-2 : fgrunt/oneshot.wav
-2 : fgrunt/seensquad.wav
-2 : fgrunt/short.wav
+2 : !FG_SCARED0
+2 : !FG_SCARED1
+2 : !FG_IDLE2
+2 : !FG_QUESTION5
+2 : !FG_QUESTION4
+2 : !FG_QUESTION3
+2 : !FG_QUESTION2
+2 : !FG_QUESTION1
+2 : !FG_IDLE11
+2 : !FG_IDLE10
+2 : !FG_CURE4
+2 : !FG_IDLE9
+2 : !FG_IDLE8
+2 : !FG_IDLE1
+2 : !FG_TAUNT2
+2 : !FG_IDLE5
+2 : !FG_IDLE6
+2 : !FG_IDLE0
+2 : !FG_MESSAROUND
+2 : !FG_BITOFF
 
 [Taunt]
 2 : fgrunt/killer.wav
-2 : fgrunt/nothing.wav
-2 : fgrunt/mister.wav
-2 : fgrunt/take.wav
-2 : fgrunt/wantsome.wav
-2 : fgrunt/freaks.wav
-2 : fgrunt/getsome.wav
+2 : !FG_TAUNT1
+2 : !FG_MAD1
+2 : !FG_KILL6
+2 : !FG_KILL1
+2 : !FG_ATTACK2
+2 : !FG_CHARGE1
+2 : !FG_MAD0
 
 [Run away]
-2 : fgrunt/cover.wav
-2 : fgrunt/down.wav
-2 : fgrunt/hellout.wav
+2 : !FG_COVER1
+2 : !FG_ALERT1
+2 : !FG_OK4
 2 : fgrunt/retreat.wav
-2 : fgrunt/incoming.wav
+2 : !FG_GREN0
+2 : !FG_COVER2
 
 [Stop]
-2 : fgrunt/watchit.wav
+2 : !FG_SHOT3
 2 : fgrunt/checkfire.wav
 
 [Dead]

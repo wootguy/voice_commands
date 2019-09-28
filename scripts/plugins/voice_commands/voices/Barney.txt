@@ -1,60 +1,72 @@
 [Yes]
 2 : barney/ba_ok0.wav
 5 : barney/iguess.wav
-5 : barney/soundsright.wav
-5 : barney/yessir.wav
-5 : barney/yup.wav
+5 : !BA_ANSWER2
+5 : !BA_ANSWER3
+5 : !BA_ANSWER6
 
 [No]
-5 : barney/dontguess.wav
-5 : barney/icanhear.wav
-5 : barney/nope.wav
-4 : barney/nosir.wav
-5 : barney/noway.wav
+5 : !BA_ANSWER10
+5 : !BA_ANSWER11
+5 : !BA_HEAR1
+5 : !BA_ANSWER14
+4 : !BA_ANSWER15
+5 : !BA_ANSWER0
 
 [Hello]
+3 : !BA_HELLO1
+2 : !BA_LATE
+2 : barney/armedforces.wav
 2 : barney/ba_hello3.wav
 2 : barney/ba_hello5.wav
 2 : barney/ba_stare1.wav
-4 : barney/haybuddy.wav
-3 : barney/hellonicesuit.wav
-4 : barney/howyoudoing.wav
+4 : !BA_HELLO3
+3 : !BA_HELLO0
+4 : !BA_HELLO2
 
 [Cheer]
-3 : barney/ba_another.wav
+3 : !BA_KILL1
 3 : barney/ba_generic2.wav
-3 : barney/ba_gotone.wav
+3 : !BA_KILL0
 3 : barney/ba_kill1.wav
-3 : barney/ba_seethat.wav
+3 : !BA_KILL3
 
 [Follow me]
+2 : !BA_STERIL
 2 : barney/ba_ht07_02.wav
 3 : barney/ba_lead0.wav
 2 : barney/ba_lead1.wav
 2 : barney/ba_lead2.wav
-4 : barney/ba_stare2.wav
+3 : barney/ba_stare2.wav
+3 : barney/ba_ht07_05.wav
 
 [I'm with you]
-4 : barney/ba_idle1.wav
+4 : !BA_OK3
+4 : !BA_OK2
+3 : barney/ba_becareful1.wav
+2 : barney/ba_attacking2.wav
+3 : barney/ba_idle1.wav
 3 : barney/ba_ok2.wav
 2 : barney/ba_ok3.wav
-4 : barney/ba_ok5.wav
+3 : barney/ba_ok5.wav
 2 : barney/ba_stare3.wav
 4 : barney/dobettertogether.wav
-3 : barney/letsgo.wav
-4 : barney/teamup2.wav
+3 : !BA_OK5
+4 : !BA_OK0
 
 [Thanks]
-2 : barney/ba_later.wav
+2 : !BA_POK3
+2 : barney/ba_ht06_03_alt.wav
+2 : barney/ba_ht06_03.wav
 
 [You're welcome]
-3 : barney/yougotit.wav
-4 : barney/youbet.wav
+3 : !BA_ANSWER5
+4 : !BA_ANSWER4
 
 [Help]
 2 : barney/ba_needhelp0.wav
 4 : barney/ba_needhelp1.wav
-4 : voice_commands/barney/help1.ogg
+2 : voice_commands/barney/help1.ogg
 
 [Sorry]
 3 : voice_commands/barney/sorry1.ogg
@@ -63,6 +75,18 @@
 2 : voice_commands/barney/sorry4.ogg
 
 [Chit-chat]
+3 : !BA_QUESTION1
+3 : !BA_QUESTION13
+3 : !BA_SMELL1
+3 : !BA_QUESTION14
+3 : barney/hearsomething2.wav
+3 : !BA_QUESTION9
+2 : !BA_TOPSIDE
+2 : !BA_SLEW
+3 : barney/ba_docprotect3.wav
+3 : barney/ba_gethev.wav
+4 : !BA_IDLE8
+3 : !BA_ATTACK5
 2 : barney/ba_hello4.wav
 2 : barney/ba_ht01_03.wav
 2 : barney/ba_ht07_19.wav
@@ -71,46 +95,47 @@
 2 : barney/ba_internet.wav
 2 : barney/ba_mad3.wav
 3 : barney/badarea.wav
-3 : barney/badfeeling.wav
-3 : barney/beertopside.wav
-2 : barney/bigmess.wav
-3 : barney/bigplace.wav
-3 : barney/coldone.wav
-3 : barney/crewdied.wav
-2 : barney/getanyworse.wav
-2 : barney/gladof38.wav
-3 : barney/guyresponsible.wav
-2 : barney/luckwillturn.wav
-2 : barney/nodrill.wav
-2 : barney/of1a5_ba01.wav
-2 : barney/somethingdied.wav
-3 : barney/somethingmoves.wav
-3 : barney/soundsbad.wav
-2 : barney/survive.wav
-3 : barney/targetpractice.wav
-2 : barney/workingonstuff.wav
+3 : !BA_IDLE7
+3 : !BA_QUESTION0
+2 : !BA_IDLE3
+3 : !BA_IDLE5
+3 : !BA_IDLE1
+4 : !BA_QUESTION11
+2 : !BA_QUESTION2
+2 : !BA_QUESTION3
+4 : !BA_IDLE2
+2 : !BA_IDLE4
+2 : !BA_QUESTION8
+2 : !OF1A5_BARN1
+2 : !BA_SMELL0
+3 : !BA_QUESTION12
+3 : !BA_HEAR2
+2 : !BA_IDLE9
+3 : !BA_IDLE6
+3 : !BA_QUESTION4
 2 : barney/youeverseen.wav
 
 [Taunt]
-2 : barney/aintscared.wav
-4 : barney/ba_buttugly.wav
-2 : barney/ba_endline.wav
-4 : barney/ba_friends.wav
+2 : !BA_SHOT1
+2 : !BA_QUESTION7
+4 : !BA_KILL2
+2 : !BA_MAD4
+4 : !BA_SHOT4
 2 : barney/ba_mad0.wav
 2 : barney/ba_mad2.wav
-2 : barney/ba_bring.wav
-2 : barney/ba_tomb.wav
-4 : barney/ba_uwish.wav
-3 : barney/ba_iwish.wav
-2 : barney/ba_whatyou.wav
-2 : barney/c1a4_ba_octo1.wav
-2 : barney/c1a4_ba_octo4.wav
-2 : barney/c2a4_ba_arg1a.wav
-2 : barney/diebloodsucker.wav
+2 : !BA_KILL6
+2 : !BA_MAD6
+4 : !BA_MAD2
+3 : !BA_MAD1
+2 : !BA_SHOT3
+2 : !BA_TENTACLE
+2 : !BA_6SAT
+2 : !BA_ARG1A
+2 : !BA_ATTACK4
 2 : barney/easily.wav
-4 : barney/youtalkmuch.wav
-3 : barney/ba_somuch.wav
-2 : barney/ba_stepoff.wav
+4 : !BA_ANSWER20
+3 : !BA_MAD3
+2 : !BA_MAD0
 
 [Run away]
 2 : barney/aghh.wav
@@ -118,13 +143,17 @@
 2 : barney/hey.wav
 
 [Stop]
+2 : !BA_POK2
+2 : !BA_BUTTON
 2 : barney/ba_crazy.wav
 2 : barney/ba_generic0.wav
-2 : barney/ba_power4.wav
-2 : barney/donthurtem.wav
+2 : !BA_POWER4
+2 : !BA_SCARED0
+2 : !BA_SHOT5
 
 [Dead]
-2 : barney/ba_die1.wav
+5 : !BA_ZOMBIE4
+2 : !BA_DIE1
 2 : barney/ba_die2.wav
 2 : barney/ba_die3.wav
 2 : barney/ba_ht06_02.wav

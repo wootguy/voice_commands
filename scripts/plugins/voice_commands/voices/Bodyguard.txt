@@ -2,66 +2,66 @@
 2 : bodyguard/yougotit.ogg
 
 [No]
-3 : bodyguard/getlost.ogg
-4 : bodyguard/whathelljoke.ogg
+3 : !BG_POK1
+4 : !BG_KILL0
 
 [Hello]
-2 : bodyguard/hello.ogg
-3 : bodyguard/whatsgoinon.ogg
+2 : !BG_HELLO0
+3 : !BG_HELLO1
 
 [Cheer]
-3 : bodyguard/nicesuit.ogg
-4 : bodyguard/shownupdrunk.ogg
+3 : !BG_IDLE4
+4 : !BG_IDLE2
 
 [Follow me]
-5 : bodyguard/heyoverhere.ogg
+5 : !BG_MAD1
 
 [I'm with you]
-3 : bodyguard/letsmove.ogg
-3 : bodyguard/getshitoverwith.ogg
+3 : !BG_OK0
+3 : !BG_ATTACK0
 
 [Thanks]
-3 : bodyguard/looklikeshit.ogg
+3 : !BG_CUREA
 
 [You're welcome]
-3 : bodyguard/babysitter.ogg
+3 : !BG_OK1
 
 [Help]
-3 : bodyguard/primalroar.ogg
+3 : !BG_MAD2
 
 [Sorry]
-3 : bodyguard/stop1.ogg
+3 : !BG_STOP0
 
 [Chit-chat]
-4 : bodyguard/ashestoashes.ogg
-3 : bodyguard/happenedhere.ogg
-3 : bodyguard/hellhappenedyou.ogg
-3 : bodyguard/imbusy.ogg
-4 : bodyguard/justafleshwound.ogg
-4 : bodyguard/layeggs.ogg
-3 : bodyguard/mondays.ogg
-3 : bodyguard/notaninjury.ogg
-3 : bodyguard/onassignment.ogg
-3 : bodyguard/palimworking.ogg
-3 : bodyguard/pathetic.ogg
-3 : bodyguard/mondays.ogg
+5 : !BG_KILL2
+3 : !BG_SMELL0
+3 : !BG_CUREB
+3 : !BG_POK0
+4 : !BG_MORTAL0
+4 : !BG_KILL1
+3 : !BG_IDLE1
+3 : !BG_CUREC
+3 : !BG_POK3
+3 : !BG_POK2
+3 : !BG_IDLE0
+3 : !BG_IDLE1
 
 [Taunt]
-3 : bodyguard/bringiton.ogg
-3 : bodyguard/shootface.ogg
+3 : !BG_MAD0
+3 : !BG_IDLE3
 3 : bodyguard/pumpsomelead.ogg
 
 [Run away]
-3 : bodyguard/laterfellas.ogg
-4 : bodyguard/pain4.ogg
+3 : !BG_WAIT1
+4 : !BG_WOUND3
 
 [Stop]
-4 : bodyguard/knockitoff.ogg
-4 : bodyguard/hellareyoudoing.ogg
-4 : bodyguard/backoff.ogg
+4 : !BG_SCARED1
+4 : !BG_SCARED0
+4 : !BG_SCARED2
 
 [Dead]
 3 : bodyguard/die1.ogg
 3 : bodyguard/die2.ogg
 3 : bodyguard/die3.ogg
-3 : bodyguard/pain3.ogg
+3 : !BG_WOUND2
