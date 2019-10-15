@@ -8,6 +8,9 @@
 2 : !FG_ANSWER2
 
 [Hello]
+2 : !FG_EVAC
+2 : !FG_HELLO2
+2 : !FG_POK3
 2 : !FG_POK2
 2 : !FG_MASKFREAKS
 2 : !FG_HELLO1
@@ -25,6 +28,7 @@
 2 : voice_commands/fgrunt/cheer4.ogg
 
 [Follow me]
+2 : !FG_CHARGE0
 2 : !FG_ATTACK9
 2 : !FG_CHARGE2
 2 : !FG_ATTACK8
@@ -34,6 +38,8 @@
 2 : !FG_ATTACK7
 
 [I'm with you]
+2 : !FG_OK6
+2 : !FG_OK2
 2 : !FG_OK7
 2 : !FG_OK0
 2 : !FG_OK3
@@ -64,6 +70,11 @@
 2 : !TG_NOTOPEN3
 
 [Chit-chat]
+2 : !FG_QUESTION0
+2 : !FG_IDLE7
+2 : !FG_TABLES
+2 : !FG_SAMETEAM
+2 : !FG_CURE3
 2 : !FG_SCARED0
 2 : !FG_SCARED1
 2 : !FG_IDLE2
@@ -72,6 +83,7 @@
 2 : !FG_QUESTION3
 2 : !FG_QUESTION2
 2 : !FG_QUESTION1
+2 : !FG_IDLE3
 2 : !FG_IDLE11
 2 : !FG_IDLE10
 2 : !FG_CURE4
@@ -87,6 +99,8 @@
 
 [Taunt]
 2 : fgrunt/killer.wav
+2 : !FG_SHOT4
+2 : !FG_ATTACK11
 2 : !FG_TAUNT1
 2 : !FG_MAD1
 2 : !FG_KILL6
