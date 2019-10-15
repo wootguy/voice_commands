@@ -1,4 +1,6 @@
 [Yes]
+2 : !SC_ANSWER5
+2 : !SC_ANSWER15
 2 : !SC_ANSWER9
 2 : !SC_OK8
 2 : !SC_ANSWER11
@@ -11,6 +13,10 @@
 2 : !SC_ANSWER14
 
 [No]
+2 : scientist/idiotic.wav
+2 : !SC_ANSWER0
+2 : !SC_ANSWER1
+2 : !SC_ANSWER4
 2 : !SC_ANSWER18
 2 : !SC_ANSWER21
 2 : scientist/dontconcur.wav
@@ -22,6 +28,8 @@
 2 : !SC_ANSWER25
 
 [Hello]
+2 : scientist/sc_hello5.wav
+2 : !SC_HELLO6
 2 : !SC_HELLO2
 2 : scientist/ahfreeman.wav
 2 : scientist/c1a0_sci_itsyou.wav
@@ -62,6 +70,7 @@
 2 : !SC_M5
 
 [I'm with you]
+2 : scientist/protectme.wav
 3 : !SC_OK0
 2 : scientist/icanhelp.wav
 2 : !SC_1MAN
@@ -93,6 +102,8 @@
 [Help]
 2 : voice_commands/scientist/help1.ogg
 2 : voice_commands/scientist/help2.ogg
+2 : !SC_YARD_BOX4
+2 : scientist/sc_hello3.wav
 2 : scientist/b01_sci01_whereami.wav
 2 : !SC_ACCIDENT3
 2 : !SC_DANGLING
@@ -105,12 +116,17 @@
 3 : voice_commands/scientist/sorry1.ogg
 2 : voice_commands/scientist/sorry2.ogg
 2 : voice_commands/scientist/sorry3.ogg
+2 : !SC_WAIT1
+3 : scientist/excuse.wav
 4 : !SC_FEAR7
 3 : !SC_FEAR8
 3 : !SC_FEAR10
 4 : !SC_FEAR11
 
 [Chit-chat]
+2 : scientist/safetyinnumbers.wav
+2 : !SC_BETTERLUCK
+2 : !SC_MONST1
 2 : !SC_CTRL3A
 2 : !SC_IDLE9
 2 : !SC_QUESTION20
@@ -125,6 +141,7 @@
 2 : !SC_LOCK1A
 3 : !SC_DARKROOM
 3 : !SC_TRANSMISSION
+3 : !SC_HEAR1
 2 : !SC_POWEROFF
 2 : !SC_TRAINEND
 2 : !SC_PQUEST9
@@ -204,8 +221,12 @@
 2 : !SC_QUESTION15
 
 [Taunt]
+2 : !SC_PUTDOWN
+2 : !SC_WHATSWORSE
+2 : !SC_ZOMBIE6A
 2 : !SC_QUESTION25
 2 : !SC_SMELL1
+2 : scientist/shutup2.wav
 2 : scientist/perfume.wav
 2 : scientist/sc_pok1.wav
 2 : scientist/sc_pok3.wav
@@ -224,15 +245,17 @@
 
 [Run away]
 2 : !SC_SILO1A
+2 : !SC_SILO2A
 2 : voice_commands/scientist/run1.ogg
 2 : voice_commands/scientist/run2.ogg
 2 : !SC_ZOMBIE1A
-1 : scientist/c1a3_sci_silo2a.wav
 1 : !SC_FEAR3
 1 : scientist/gottogetout.wav
 2 : !SC_POWER2
+2 : !SC_SCREAM5
 2 : !SC_SCREAM6
 1 : !SC_SCREAM7
+1 : !SC_SCREAM11
 1 : !SC_SCREAM12
 1 : !SC_SCREAM13
 1 : !SC_SCREAM14
