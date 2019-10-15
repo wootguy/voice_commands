@@ -16,6 +16,8 @@ Each command has its own sprite and a collection of sound clips that are chosen 
 
 All voices and commands are fully customizable. You can add, remove, or rearrange commands and voices as you see fit. Just don't remove or rename the "Follow me", "Help", or "Stop" commands if you want monster following to work.
 
+Currently up to 4 different menus are supported, 2 are there by default.
+
 # Usage
 
 Say ".vc X" to open a command menu (where X = 1 or 2).  
@@ -38,6 +40,7 @@ as_command vc.enable_gain 1
 as_command vc.global_gain 0
 as_command vc.falloff 1.0
 as_command vc.monster_reactions 1
+as_command vc.use_sentences 1
 as_command vc.debug 0
 ```
 
@@ -47,6 +50,7 @@ as_command vc.debug 0
 ```vc.global_gain``` adds extra gain to all sound files (0-6). Has no effect if gain is disabled.  
 ```vc.falloff``` adjusts how far non-global commands can be heard (2 = near, 1 = normal, 0.5 = far, 0 = global)  
 ```vc.monster_reactions``` enables monster responses to voice commands (e.g. follow player, detect noise).  
+```vc.use_sentences``` controls the use of sentence lines. Set to 0 for maps that override the default sentences (as_command in map cfg)  
 ```vc.debug``` shows sound details in chat and plays files in order instead of randomly. Use this to test your own sounds.  
 
 # Server impact
