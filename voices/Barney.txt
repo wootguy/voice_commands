@@ -1,4 +1,5 @@
 [Yes]
+3 : !BA_ANSWER1
 2 : barney/ba_ok0.wav
 5 : barney/iguess.wav
 5 : !BA_ANSWER2
@@ -6,6 +7,8 @@
 5 : !BA_ANSWER6
 
 [No]
+4 : !BA_ANSWER8
+4 : !BA_ANSWER9
 5 : !BA_ANSWER10
 5 : !BA_ANSWER11
 5 : !BA_HEAR1
@@ -14,6 +17,9 @@
 5 : !BA_ANSWER0
 
 [Hello]
+3 : !BA_STARE3
+4 : !BA_HELLO5
+4 : !BA_HELLO4
 3 : !BA_HELLO1
 2 : !BA_LATE
 2 : barney/armedforces.wav
@@ -25,6 +31,7 @@
 4 : !BA_HELLO2
 
 [Cheer]
+3 : !BA_KILL5
 3 : !BA_KILL1
 3 : barney/ba_generic2.wav
 3 : !BA_KILL0
@@ -41,6 +48,9 @@
 3 : barney/ba_ht07_05.wav
 
 [I'm with you]
+3 : !BA_OK6
+3 : !BA_OK4
+3 : !BA_OK1
 4 : !BA_OK3
 4 : !BA_OK2
 3 : barney/ba_becareful1.wav
@@ -50,7 +60,6 @@
 2 : barney/ba_ok3.wav
 3 : barney/ba_ok5.wav
 2 : barney/ba_stare3.wav
-4 : barney/dobettertogether.wav
 3 : !BA_OK5
 4 : !BA_OK0
 
@@ -75,6 +84,12 @@
 2 : voice_commands/barney/sorry4.ogg
 
 [Chit-chat]
+3 : !BA_QUESTION10
+2 : !BA_QUESTION6
+2 : !BA_IDLE10
+2 : !BA_SMELL2
+4 : !BA_HEAR0
+4 : !BA_ANSWER19
 3 : !BA_QUESTION1
 3 : !BA_QUESTION13
 3 : !BA_SMELL1
@@ -116,6 +131,11 @@
 2 : barney/youeverseen.wav
 
 [Taunt]
+2 : !BA_ATTACK1
+2 : !BA_SHOT0
+2 : !BA_SHOT2
+2 : !BA_CHAT1
+3 : !BA_MAD5
 2 : !BA_SHOT1
 2 : !BA_QUESTION7
 4 : !BA_KILL2
@@ -138,11 +158,14 @@
 2 : !BA_MAD0
 
 [Run away]
+2 : !BA_7SAT
+2 : !BA_HEY
 2 : barney/aghh.wav
 2 : barney/die.wav
 2 : barney/hey.wav
 
 [Stop]
+2 : !BA_ATTACK2
 2 : !BA_POK2
 2 : !BA_BUTTON
 2 : barney/ba_crazy.wav

@@ -3,6 +3,7 @@
 4 : !OT_ANSWER0
 4 : !OT_ANSWER1
 4 : !OT_ANSWER2
+4 : !OT_ANSWER4
 
 [No]
 4 : !OT_ANSWER10
@@ -16,6 +17,7 @@
 4 : !OT_HELLO0
 3 : !OT_HELLO3
 3 : !OT_HELLO2
+4 : !OT_HELLO1
 3 : !OT_1
 
 [Cheer]
@@ -32,7 +34,6 @@
 4 : !OT_ATTACK0
 4 : !OT_OK4
 4 : !OT_OK1
-4 : !OT_HELLO1
 4 : !OT_OK6
 4 : !OT_OK5
 4 : !OT_TRUSTYA
@@ -56,9 +57,14 @@
 3 : voice_commands/otis/sorry1.ogg
 2 : voice_commands/otis/sorry2.ogg
 4 : !OT_WAIT4
+4 : !OT_SHOT0
 
 [Chit-chat]
 2 : otis/candy.wav
+4 : !OT_HEAR1
+4 : !OT_IDLE6
+4 : !OT_ANSWER8
+4 : !OT_SMELL0
 4 : !OT_KILL2
 4 : !OT_QUESTION4
 4 : !OT_IDLE1
@@ -87,9 +93,12 @@
 4 : !OT_IDLE2
 
 [Taunt]
+4 : !OT_MAD3
+4 : !OT_SCARED1
 4 : !OT_KILL6
 4 : !OT_MAD0
 4 : !OT_SHOT1
+4 : !OT_SHOT2
 4 : !OT_ATTACK3
 4 : !OT_MAD2
 4 : !OT_MAD1
