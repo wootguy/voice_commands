@@ -471,7 +471,7 @@ void voiceMenuCallback(CTextMenu@ menu, CBasePlayer@ plr, int page, const CTextM
 	if (!g_debug_mode.GetBool() and delta < g_command_delay.GetFloat())
 	{
 		float waitTime = g_command_delay.GetFloat() - delta;
-		g_PlayerFuncs.PrintKeyBindingString(plr, "Wait " + format_float(waitTime) + " seconds\n");
+		g_PlayerFuncs.ClientPrint(plr, HUD_PRINTCENTER, "Wait " + format_float(waitTime) + " seconds\n");
 		return;
 	}
 	state.lastChatTime = t;
