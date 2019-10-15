@@ -50,7 +50,7 @@ as_command vc.debug 0
 ```vc.global_gain``` adds extra gain to all sound files (0-6). Has no effect if gain is disabled.  
 ```vc.falloff``` adjusts how far non-global commands can be heard (2 = near, 1 = normal, 0.5 = far, 0 = global)  
 ```vc.monster_reactions``` enables monster responses to voice commands (e.g. follow player, detect noise).  
-```vc.use_sentences``` controls the use of sentence lines. Set to 0 for maps that override custom sentences (as_command in map cfg)  
+```vc.use_sentences``` controls the use of sentence lines. Set to 0 for maps that override the default sentences (as_command in map cfg)  
 ```vc.debug``` shows sound details in chat and plays files in order instead of randomly. Use this to test your own sounds.  
 
 # Server impact
