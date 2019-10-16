@@ -141,7 +141,7 @@
 2 : !SC_LOCK1A
 3 : !SC_DARKROOM
 3 : !SC_TRANSMISSION
-3 : !SC_HEAR1
+2 : !SC_HEAR1
 2 : !SC_POWEROFF
 2 : !SC_TRAINEND
 2 : !SC_PQUEST9
@@ -226,7 +226,6 @@
 2 : !SC_ZOMBIE6A
 2 : !SC_QUESTION25
 2 : !SC_SMELL1
-2 : scientist/shutup2.wav
 2 : scientist/perfume.wav
 2 : scientist/sc_pok1.wav
 2 : scientist/sc_pok3.wav
