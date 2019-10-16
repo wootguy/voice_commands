@@ -17,7 +17,6 @@
 5 : !BA_ANSWER0
 
 [Hello]
-3 : !BA_STARE3
 4 : !BA_HELLO5
 4 : !BA_HELLO4
 3 : !BA_HELLO1
@@ -84,12 +83,11 @@
 2 : voice_commands/barney/sorry4.ogg
 
 [Chit-chat]
-3 : !BA_QUESTION10
+4 : !BA_QUESTION10
 2 : !BA_QUESTION6
 2 : !BA_IDLE10
 2 : !BA_SMELL2
 4 : !BA_HEAR0
-4 : !BA_ANSWER19
 3 : !BA_QUESTION1
 3 : !BA_QUESTION13
 3 : !BA_SMELL1
@@ -131,10 +129,10 @@
 2 : barney/youeverseen.wav
 
 [Taunt]
+4 : !BA_ANSWER19
 2 : !BA_ATTACK1
 2 : !BA_SHOT0
 2 : !BA_SHOT2
-2 : !BA_CHAT1
 3 : !BA_MAD5
 2 : !BA_SHOT1
 2 : !BA_QUESTION7
@@ -162,7 +160,6 @@
 2 : !BA_HEY
 2 : barney/aghh.wav
 2 : barney/die.wav
-2 : barney/hey.wav
 
 [Stop]
 2 : !BA_ATTACK2
