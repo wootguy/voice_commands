@@ -372,7 +372,7 @@ void loadVoiceData()
 					params[1].Trim();
 					if (talker !is null and phrases !is null and params.length() == 2)
 					{						
-						Phrase p(talker.name, groupName, atoi( params[0] ), params[1]);
+						Phrase p(talker.name, groupName, atof( params[0] ), params[1]);
 						p.id = phraseIdNum++;
 						phrases.insertLast( p );
 						g_all_phrases.insertLast(@p);
