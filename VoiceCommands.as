@@ -123,9 +123,13 @@ void PluginInit()
 	@g_use_sentences = CCVar("use_sentences", 1, "Set this to 0 for maps that override custom sentences and break voice commands", ConCommandFlag::AdminOnly);
 }
 
+int total_precached_sounds = 0;
+
 void MapInit()
 {
 	g_Game.AlertMessage( at_console, "Precaching " + g_all_phrases.length() + " sounds and " + g_commands.length() + " sprites\n");
+	
+	dictionary unique_sounds;
 	
 	for (uint i = 0; i < g_all_phrases.length(); i++) {
 		string soundFile = g_all_phrases[i].soundFile;
@@ -135,9 +139,12 @@ void MapInit()
 		if (soundFile.Length() > 0 and soundFile[0] != "!") {
 			g_SoundSystem.PrecacheSound(soundFile);
 			g_Game.PrecacheGeneric("sound/" + soundFile);
+			
+			unique_sounds[soundFile.ToLowercase()] = true;
 		}
-		
 	}
+	
+	total_precached_sounds = unique_sounds.size();
 		
 	for (uint i = 0; i < g_commands.length(); i++)
 		g_Game.PrecacheModel(g_commands[i].sprite);
@@ -535,6 +542,9 @@ void voiceMenuCallback(CTextMenu@ menu, CBasePlayer@ plr, int page, const CTextM
 	
 	if (!g_enable_gain.GetBool())
 		gain = 1;
+	if (gain < 1) {
+		gain = 1;
+	}
 	
 	updatePlayerList();
 	
@@ -695,6 +705,11 @@ bool doCommand(CBasePlayer@ plr, const CCommand@ args)
 	{
 		if ( args[0] == ".vc" )
 		{
+			if (args[1] == "total") {
+				
+				g_PlayerFuncs.SayText(plr, "vc sounds precached: " + total_precached_sounds + "\n");
+				return true;
+			}
 			if ( args[1] == "1" || args[1] == "2" || args[1] == "3" || args[1] == "4" )
 			{
 				openChatMenu(state, plr, atoi(args[1]), false);
