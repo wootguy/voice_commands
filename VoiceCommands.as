@@ -75,7 +75,6 @@ dictionary g_talkers; // all the voice data
 array<Phrase@> g_all_phrases; // for straight-forward precaching, duplicates the data in g_talkers
 array<string> g_talkers_ordered; // used to display talkers/voices in the correct order
 array<CommandGroup@> g_commands; // all of em
-array<string> command_menu_titles;
 string command_menu_1_title;
 string command_menu_2_title;
 string command_menu_3_title;
@@ -93,6 +92,7 @@ CCVar@ g_use_sentences;
 
 dictionary player_states; // persistent-ish player data, organized by steam-id or username if on a LAN server, values are @PlayerState
 bool debug_log = false;
+bool reload_next_map = false;
 string default_voice = 'Scientist';
 string plugin_path = 'scripts/plugins/voice_commands/';
 // All possible sound channels we can use
@@ -127,6 +127,13 @@ int total_precached_sounds = 0;
 
 void MapInit()
 {
+	if (reload_next_map) {
+		loadConfig();
+		loadVoiceData();
+		loadDefaultSentences();
+		reload_next_map = false;
+	}
+
 	g_Game.AlertMessage( at_console, "Precaching " + g_all_phrases.length() + " sounds and " + g_commands.length() + " sprites\n");
 	
 	dictionary unique_sounds;
@@ -229,6 +236,10 @@ void loadDefaultSentences()
 
 void loadConfig()
 {
+	g_commands.resize(0);
+	g_talkers.clear();
+	g_talkers_ordered.resize(0);
+	
 	string dataPath = plugin_path + "VoiceCommands.cfg";
 	File@ f = g_FileSystem.OpenFile( dataPath, OpenFile::READ );
 	int parseMode = PARSE_SETTINGS;	
@@ -335,7 +346,9 @@ void loadConfig()
 }
 
 void loadVoiceData()
-{	
+{
+	g_all_phrases.resize(0);
+	
 	array<string>@ voiceNames = g_talkers.getKeys();
 	int phraseIdNum = 0;
 	
@@ -705,6 +718,11 @@ bool doCommand(CBasePlayer@ plr, const CCommand@ args)
 	{
 		if ( args[0] == ".vc" )
 		{
+			if (args[1] == "reload") {
+				reload_next_map = true;
+				g_PlayerFuncs.SayText(plr, "sounds will be reloaded next map\n");
+				return true;
+			}
 			if (args[1] == "total") {
 				
 				g_PlayerFuncs.SayText(plr, "vc sounds precached: " + total_precached_sounds + "\n");
