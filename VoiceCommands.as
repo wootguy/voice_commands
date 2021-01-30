@@ -450,8 +450,15 @@ CBaseMonster@ getMonsterLookingAt(CBasePlayer@ plr, float maxDistance)
 	return null;
 }
 
-void triggerMonsterAction(CBaseMonster@ monster, CBasePlayer@ plr, string action)
+void triggerMonsterAction(EHandle h_monster, EHandle h_plr, string action)
 {
+	CBaseMonster@ monster = cast<CBaseMonster@>(h_monster.GetEntity());
+	CBasePlayer@ plr = cast<CBasePlayer@>(h_plr.GetEntity());
+	
+	if (monster is null or plr is null) {
+		return;
+	}
+	
 	//CTalkMonster@ talkmon = cast<CTalkMonster@>(monster);
 	if (action == 'Follow me' or action == 'Help') {
 		monster.StartPlayerFollowing(plr, false);
@@ -607,7 +614,7 @@ void voiceMenuCallback(CTextMenu@ menu, CBasePlayer@ plr, int page, const CTextM
 		
 		if ( target !is null ) // Looking at a monster that is within earshot
 		{
-			g_Scheduler.SetTimeout( "triggerMonsterAction", 1, @target, @plr, phraseId );
+			g_Scheduler.SetTimeout( "triggerMonsterAction", 1, EHandle(target), EHandle(plr), phraseId );
 		}
 	}
 	
