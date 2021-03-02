@@ -728,6 +728,8 @@ bool doCommand(CBasePlayer@ plr, const CCommand@ args)
 {
 	PlayerState@ state = getPlayerState(plr);
 	
+	bool isAdmin = g_PlayerFuncs.AdminLevel(plr) >= ADMIN_YES;
+	
 	if ( args.ArgC() > 0 )
 	{
 		if ( args[0] == ".vc" )
@@ -774,6 +776,16 @@ bool doCommand(CBasePlayer@ plr, const CCommand@ args)
 					voice = args[2];
 				}
 				showVoiceStats(plr, voice);
+				return true;
+			}
+			if ( args[1] == "writestats" )
+			{
+				if (isAdmin) {
+					writeUsageStats();
+				} else {
+					g_PlayerFuncs.SayText(plr, "That command is for admins only.\n");
+				}
+				
 				return true;
 			}
 			if ( args[1] == "pitch" and args.ArgC() > 2 )
@@ -856,8 +868,10 @@ array<VoiceStat> g_stats;
 void logVoiceStat(CBasePlayer@ plr, string voice) {
 	string steamId = g_EngineFuncs.GetPlayerAuthId( plr.edict() );
 	
+	voice = voice.ToLowercase();
+	
 	for (uint i = 0; i < g_stats.size(); i++) {
-		if (voice == g_stats[i].voice) {
+		if (voice == g_stats[i].voice.ToLowercase()) {
 			for (uint k = 0; k < g_stats[i].users.size(); k++) {
 				if (steamId == g_stats[i].users[k].steamid) {
 					g_stats[i].users[k].commandCount++;
@@ -953,7 +967,7 @@ void loadUsageStats() {
 
 		if (tempVoiceName.Length() > 0) {
 			VoiceStat vstat;
-			vstat.voice = tempVoiceName;
+			vstat.voice = tempVoiceName.ToLowercase();
 			vstat.users = tempUserStats;
 			tempUserStats = array<UserStat>();
 			g_stats.insertLast(vstat);
@@ -969,8 +983,10 @@ void loadUsageStats() {
 	for (uint i = 0; i < g_talkers_ordered.size(); i++) {
 		bool hasStat = false;
 		
+		string lowerVoice = lowerVoice.ToLowercase();
+		
 		for (uint k = 0; k < g_stats.size(); k++) {
-			if (g_stats[k].voice == g_talkers_ordered[i]) {
+			if (g_stats[k].voice.ToLowercase() == lowerVoice) {
 				hasStat = true;
 				break;
 			}
@@ -978,7 +994,7 @@ void loadUsageStats() {
 		
 		if (!hasStat) {
 			VoiceStat vstat;
-			vstat.voice = g_talkers_ordered[i];
+			vstat.voice = lowerVoice;
 			g_stats.insertLast(vstat);
 		}
 	}
