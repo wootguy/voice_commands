@@ -98,7 +98,7 @@ string plugin_path = 'scripts/plugins/voice_commands/';
 // All possible sound channels we can use
 array<SOUND_CHANNEL> channels = {CHAN_STATIC, CHAN_VOICE, CHAN_STREAM, CHAN_BODY, CHAN_ITEM, CHAN_AUTO, CHAN_WEAPON};
 
-void print(string text) { g_Game.AlertMessage( at_console, "VoiceCommands: " + text); }
+void print(string text) { g_Game.AlertMessage( at_console, "[VoiceCommands] " + text); }
 void println(string text) { print(text + "\n"); }
 void printSuccess() { g_Game.AlertMessage( at_console, "SUCCESS\n"); }
 
@@ -121,6 +121,8 @@ void PluginInit()
 	@g_enable_global = CCVar("enable_global", 1, "Allow global commands", ConCommandFlag::AdminOnly);
 	@g_falloff = CCVar("falloff", 1.0, "Adjusts how far sounds can be heard (1 = normal, 0 = infinite)", ConCommandFlag::AdminOnly);
 	@g_use_sentences = CCVar("use_sentences", 1, "Set this to 0 for maps that override custom sentences and break voice commands", ConCommandFlag::AdminOnly);
+	
+	loadUsageStats();
 }
 
 int total_precached_sounds = 0;
@@ -180,6 +182,9 @@ HookReturnCode MapChange()
 		if (state.menu !is null)
 			@state.menu = null;
 	}
+	
+	writeUsageStats();
+	
 	return HOOK_CONTINUE;
 }
 
@@ -620,6 +625,8 @@ void voiceMenuCallback(CTextMenu@ menu, CBasePlayer@ plr, int page, const CTextM
 	
 	if (g_debug_mode.GetBool())
 		g_PlayerFuncs.SayTextAll(plr, "Idx: " + idx + "/" + (phrases.length()-1) + " Gain: " + gain + ", Volume: " + vol + ", Pitch: " + state.pitch + ", Sound File: " + soundFile + "\n");
+		
+	logVoiceStat(plr, talker.name);
 }
 
 // handles player voice selection
@@ -760,6 +767,15 @@ bool doCommand(CBasePlayer@ plr, const CCommand@ args)
 				state.globalInvert = 0;
 				return true;
 			}
+			if ( args[1] == "stats" )
+			{
+				string voice = "";
+				if (args.ArgC() > 2) {
+					voice = args[2];
+				}
+				showVoiceStats(plr, voice);
+				return true;
+			}
 			if ( args[1] == "pitch" and args.ArgC() > 2 )
 			{		
 				int newPitch = atoi( args[2] );
@@ -791,6 +807,7 @@ bool doCommand(CBasePlayer@ plr, const CCommand@ args)
 			g_PlayerFuncs.SayText(plr, 'Say ".vc voice" to select a different voice.\n');
 			g_PlayerFuncs.SayText(plr, 'Say ".vc pitch X" to change your voice pitch (where X = 1-255).\n');
 			g_PlayerFuncs.SayText(plr, 'Say ".vc vol X" to adjust all voice volumes (where X = 0-100).\n');
+			g_PlayerFuncs.SayText(plr, 'Type ".vc stats" or ".vc stats <voice name>" in console to see usage statistics.\n');
 			return true;
 		}
 	}
@@ -817,4 +834,210 @@ void voiceCmd( const CCommand@ args )
 {
 	CBasePlayer@ plr = g_ConCommandSystem.GetCurrentPlayer();
 	doCommand(plr, args);
+}
+
+
+const string voiceStatsFile = "scripts/plugins/store/vc_stats.txt"; // save here in case the server crashes
+
+class UserStat {
+	string steamid;
+	string name;
+	int commandCount = 0;
+}
+
+class VoiceStat {
+	string voice;
+	array<UserStat> users;
+	int totalUses; // temp for sorting
+}
+
+array<VoiceStat> g_stats;
+
+void logVoiceStat(CBasePlayer@ plr, string voice) {
+	string steamId = g_EngineFuncs.GetPlayerAuthId( plr.edict() );
+	
+	for (uint i = 0; i < g_stats.size(); i++) {
+		if (voice == g_stats[i].voice) {
+			for (uint k = 0; k < g_stats[i].users.size(); k++) {
+				if (steamId == g_stats[i].users[k].steamid) {
+					g_stats[i].users[k].commandCount++;
+					return;
+				}
+			}
+			
+			UserStat newStat;
+			newStat.steamid = steamId;
+			newStat.name = plr.pev.netname;
+			newStat.commandCount = 1;
+			g_stats[i].users.insertLast(newStat);
+			return;
+		}
+	}
+	
+	UserStat newStat;
+	newStat.steamid = steamId;
+	newStat.name = plr.pev.netname;
+	newStat.commandCount = 1;
+	
+	VoiceStat newVstat;
+	newVstat.voice = voice;
+	newVstat.users.insertLast(newStat);
+	
+	g_stats.insertLast(newVstat);
+}
+
+void writeUsageStats() {
+	File@ f = g_FileSystem.OpenFile( voiceStatsFile, OpenFile::WRITE);
+	
+	if( f.IsOpen() )
+	{
+		int numWritten = 0;
+		for (uint i = 0; i < g_stats.size(); i++) {			
+			f.Write("[" + g_stats[i].voice + "]\n");
+			for (uint k = 0; k < g_stats[i].users.size(); k++) {
+				f.Write(g_stats[i].users[k].steamid + "\\" + g_stats[i].users[k].name + "\\" + g_stats[i].users[k].commandCount + "\n");
+				numWritten++;
+			}
+		}
+		f.Close();
+		
+		println("Wrote " + numWritten + " usage stats");
+	}
+	else
+		println("Failed to open voice stats file: " + voiceStatsFile + "\n");
+}
+
+void loadUsageStats() {
+	File@ file = g_FileSystem.OpenFile(voiceStatsFile, OpenFile::READ);
+
+	string tempVoiceName = "";
+	array<UserStat> tempUserStats;
+
+	if(file !is null && file.IsOpen())
+	{
+		int numRead = 0;
+		
+		while(!file.EOFReached())
+		{
+			string sLine;
+			file.ReadLine(sLine);
+				
+			sLine.Trim();
+			if (sLine.Length() == 0)
+				continue;
+			
+			if (sLine[0] == '[') {
+				if (tempVoiceName.Length() > 0) {
+					VoiceStat vstat;
+					vstat.voice = tempVoiceName;
+					vstat.users = tempUserStats;
+					tempUserStats = array<UserStat>();
+					g_stats.insertLast(vstat);
+				}
+			
+				sLine = sLine.Replace("[", "").Replace("]", "");
+				tempVoiceName = sLine;
+				continue;
+			}
+			
+			array<string> parts = sLine.Split("\\");
+			
+			UserStat stat;
+			stat.steamid = parts[0];
+			stat.name = parts[1];
+			stat.commandCount = atoi(parts[2]);
+			numRead++;
+			
+			tempUserStats.insertLast(stat);
+		}
+
+		if (tempVoiceName.Length() > 0) {
+			VoiceStat vstat;
+			vstat.voice = tempVoiceName;
+			vstat.users = tempUserStats;
+			tempUserStats = array<UserStat>();
+			g_stats.insertLast(vstat);
+		}
+		
+		println("Loaded " + numRead + " voice stats");
+
+		file.Close();
+	} else {
+		println("voice stats file not found: " + voiceStatsFile + "\n");
+	}
+	
+	for (uint i = 0; i < g_talkers_ordered.size(); i++) {
+		bool hasStat = false;
+		
+		for (uint k = 0; k < g_stats.size(); k++) {
+			if (g_stats[k].voice == g_talkers_ordered[i]) {
+				hasStat = true;
+				break;
+			}
+		}
+		
+		if (!hasStat) {
+			VoiceStat vstat;
+			vstat.voice = g_talkers_ordered[i];
+			g_stats.insertLast(vstat);
+		}
+	}
+}
+
+void showVoiceStats(CBasePlayer@ plr, string voice) {
+	bool extraInfo = voice.Length() > 0;
+	voice = voice.ToLowercase();
+	
+	for (uint i = 0; i < g_stats.size(); i++) {
+		int totalCommandCount = 0;
+		
+		for (uint k = 0; k < g_stats[i].users.size(); k++) {
+			totalCommandCount += g_stats[i].users[k].commandCount;
+		}
+		
+		g_stats[i].totalUses = totalCommandCount;
+	}
+	
+	g_stats.sort(function(a,b) { return a.totalUses > b.totalUses; });
+
+	for (uint i = 0; i < g_stats.size(); i++) {
+		if (extraInfo && g_stats[i].voice.ToLowercase() != voice) {
+			continue;
+		}
+		
+		if (extraInfo) {
+			g_PlayerFuncs.ClientPrint(plr, HUD_PRINTCONSOLE, "\nUsage stats for " + g_stats[i].voice + ":\n\n");
+			
+			if (g_stats[i].users.size() > 0) {
+				g_stats[i].users.sort(function(a,b) { return a.commandCount > b.commandCount; });
+			}
+			
+			int totalCommandCount = 0;
+		
+			for (uint k = 0; k < g_stats[i].users.size(); k++) {
+				totalCommandCount += g_stats[i].users[k].commandCount;
+				g_PlayerFuncs.ClientPrint(plr, HUD_PRINTCONSOLE, "" + (k+1) + ") " + g_stats[i].users[k].name +
+					" (" + g_stats[i].users[k].steamid + 
+					"): " + g_stats[i].users[k].commandCount + " uses\n");
+			}
+			
+			string line = "\n" + totalCommandCount + " total uses, " + g_stats[i].users.size() + " unique users\n\n";
+			g_PlayerFuncs.ClientPrint(plr, HUD_PRINTCONSOLE, line);
+			
+			return;
+		} else {
+			int totalCommandCount = 0;
+		
+			for (uint k = 0; k < g_stats[i].users.size(); k++) {
+				totalCommandCount += g_stats[i].users[k].commandCount;
+			}
+			
+			string line = g_stats[i].voice + ": " + totalCommandCount + " uses, " + g_stats[i].users.size() + " unique users\n";
+			g_PlayerFuncs.ClientPrint(plr, HUD_PRINTCONSOLE, line);
+		}
+	}
+
+	if (extraInfo) {
+		g_PlayerFuncs.ClientPrint(plr, HUD_PRINTCONSOLE, "No stats found for " + voice);
+	}
 }
