@@ -6,6 +6,46 @@ class Talker
 	Talker(string displayName) {
 		name = displayName;
 	}
+	
+	int getCustomSoundCount() {
+		array<string>@ phrase_keys = phrases.getKeys();
+		
+		dictionary unique_sounds;
+		
+		for (uint i = 0; i < phrase_keys.length(); i++)
+		{
+			array<Phrase@>@ catphrases = cast< array<Phrase@>@ >(phrases[phrase_keys[i]]);
+			
+			for (uint k = 0; k < catphrases.length(); k++) {
+				string soundFile = catphrases[k].soundFile;
+				if (isCustomSound(soundFile)) {				
+					unique_sounds[soundFile.ToLowercase()] = true;
+				}
+			}
+		}
+		
+		return unique_sounds.size();
+	}
+	
+	int getTotalSoundCount() {
+		array<string>@ phrase_keys = phrases.getKeys();
+		
+		int count = 0;
+		
+		dictionary unique_sounds;
+		
+		for (uint i = 0; i < phrase_keys.length(); i++)
+		{
+			array<Phrase@>@ catphrases = cast< array<Phrase@>@ >(phrases[phrase_keys[i]]);
+			
+			for (uint k = 0; k < catphrases.length(); k++) {
+				string soundFile = catphrases[k].soundFile;		
+				unique_sounds[soundFile.ToLowercase()] = true;
+			}
+		}
+		
+		return unique_sounds.size();
+	}
 }
 
 class Phrase
@@ -127,12 +167,27 @@ void PluginInit()
 
 int total_precached_sounds = 0;
 
+bool isCustomSound(string path) {
+	bool isScientistDefault = path.Find("scientist/") == 0;
+	bool isBarneyDefault = path.Find("barney/") == 0 && path.Find("barney/ba_") != 0;
+	bool isSoldierDefault = path.Find("fgrunt/") == 0;
+	bool isTurretDefault = path.Find("turret/") == 0;
+	bool isBguardDefault = path.Find("bodyguard/") == 0;
+	bool isOtisDefault = path.Find("otis/") == 0;
+	bool isShockDefault = path.Find("shocktrooper/") == 0;
+
+	return path.Length() > 0 and path[0] != "!" and path.Find("scientist/") != 0
+			and !isBarneyDefault and !isScientistDefault && !isSoldierDefault && !isTurretDefault
+			and !isBguardDefault && !isOtisDefault && !isShockDefault;
+}
+
 void MapInit()
 {
 	if (reload_next_map) {
 		loadConfig();
 		loadVoiceData();
 		loadDefaultSentences();
+		loadUsageStats();
 		reload_next_map = false;
 	}
 
@@ -148,7 +203,9 @@ void MapInit()
 		if (soundFile.Length() > 0 and soundFile[0] != "!") {
 			g_SoundSystem.PrecacheSound(soundFile);
 			g_Game.PrecacheGeneric("sound/" + soundFile);
-			
+		}
+		
+		if (isCustomSound(soundFile)) {
 			unique_sounds[soundFile.ToLowercase()] = true;
 		}
 	}
@@ -861,11 +918,18 @@ class VoiceStat {
 	string voice;
 	array<UserStat> users;
 	int totalUses; // temp for sorting
+	int soundCount;
+	int soundCountTotal; // includes sentences
+	bool isValid = false; // does this voice exist?
 }
 
 array<VoiceStat> g_stats;
 
 void logVoiceStat(CBasePlayer@ plr, string voice) {
+	if (voice.Length() == 0) {
+		return;
+	}
+
 	string steamId = g_EngineFuncs.GetPlayerAuthId( plr.edict() );
 	
 	voice = voice.ToLowercase();
@@ -983,11 +1047,16 @@ void loadUsageStats() {
 	for (uint i = 0; i < g_talkers_ordered.size(); i++) {
 		bool hasStat = false;
 		
-		string lowerVoice = lowerVoice.ToLowercase();
+		string lowerVoice = g_talkers_ordered[i];
+		lowerVoice = lowerVoice.ToLowercase();
+		Talker@ talker = cast< Talker@ >(g_talkers[g_talkers_ordered[i]]);
 		
 		for (uint k = 0; k < g_stats.size(); k++) {
 			if (g_stats[k].voice.ToLowercase() == lowerVoice) {
 				hasStat = true;
+				g_stats[k].soundCount = talker.getCustomSoundCount();
+				g_stats[k].soundCountTotal = talker.getTotalSoundCount();
+				g_stats[k].isValid = true;
 				break;
 			}
 		}
@@ -995,6 +1064,9 @@ void loadUsageStats() {
 		if (!hasStat) {
 			VoiceStat vstat;
 			vstat.voice = lowerVoice;
+			vstat.soundCount = talker.getCustomSoundCount();
+			vstat.soundCountTotal = talker.getTotalSoundCount();
+			vstat.isValid = true;
 			g_stats.insertLast(vstat);
 		}
 	}
@@ -1015,14 +1087,26 @@ void showVoiceStats(CBasePlayer@ plr, string voice) {
 	}
 	
 	g_stats.sort(function(a,b) { return a.totalUses > b.totalUses; });
+	
+	if (!extraInfo) {
+		g_PlayerFuncs.ClientPrint(plr, HUD_PRINTCONSOLE, "\nVoice               Uses   Users   Sounds");
+		g_PlayerFuncs.ClientPrint(plr, HUD_PRINTCONSOLE, "\n--------------------------------------------\n");
+	}
+
+	int totalLoadedSounds = 0;
 
 	for (uint i = 0; i < g_stats.size(); i++) {
+		if (!g_stats[i].isValid) {
+			continue; // voice not loaded
+		}
 		if (extraInfo && g_stats[i].voice.ToLowercase() != voice) {
 			continue;
 		}
 		
 		if (extraInfo) {
-			g_PlayerFuncs.ClientPrint(plr, HUD_PRINTCONSOLE, "\nUsage stats for " + g_stats[i].voice + ":\n\n");
+			g_PlayerFuncs.ClientPrint(plr, HUD_PRINTCONSOLE, "\nUsage stats for " + g_stats[i].voice + ":\n");
+			g_PlayerFuncs.ClientPrint(plr, HUD_PRINTCONSOLE, "\n    Name                            Uses   Steam ID");
+			g_PlayerFuncs.ClientPrint(plr, HUD_PRINTCONSOLE, "\n--------------------------------------------------------------\n");
 			
 			if (g_stats[i].users.size() > 0) {
 				g_stats[i].users.sort(function(a,b) { return a.commandCount > b.commandCount; });
@@ -1032,28 +1116,85 @@ void showVoiceStats(CBasePlayer@ plr, string voice) {
 		
 			for (uint k = 0; k < g_stats[i].users.size(); k++) {
 				totalCommandCount += g_stats[i].users[k].commandCount;
-				g_PlayerFuncs.ClientPrint(plr, HUD_PRINTCONSOLE, "" + (k+1) + ") " + g_stats[i].users[k].name +
-					" (" + g_stats[i].users[k].steamid + 
-					"): " + g_stats[i].users[k].commandCount + " uses\n");
+				
+				string line = (k >= 9 ? "" + (k+1) : " " + (k+1)) + ") ";
+				
+				string name = g_stats[i].users[k].name;
+				int padding = 32 - name.Length();
+				for (int p = 0; p < padding; p++) {
+					name += " ";
+				}
+				line += name;
+				
+				string count = g_stats[i].users[k].commandCount;
+				padding = 7 - count.Length();
+				for (int p = 0; p < padding; p++) {
+					count += " ";
+				}
+				line += count;
+				
+				string steam = g_stats[i].users[k].steamid;
+				line += steam;
+				
+				line += "\n";
+				
+				g_PlayerFuncs.ClientPrint(plr, HUD_PRINTCONSOLE, line);
 			}
 			
-			string line = "\n" + totalCommandCount + " total uses, " + g_stats[i].users.size() + " unique users\n\n";
-			g_PlayerFuncs.ClientPrint(plr, HUD_PRINTCONSOLE, line);
+			g_PlayerFuncs.ClientPrint(plr, HUD_PRINTCONSOLE, "--------------------------------------------------------------\n");
 			
+			string line = "                                    " + totalCommandCount + " (total)\n\n";
+			g_PlayerFuncs.ClientPrint(plr, HUD_PRINTCONSOLE, line);
 			return;
 		} else {
 			int totalCommandCount = 0;
-		
+			
 			for (uint k = 0; k < g_stats[i].users.size(); k++) {
 				totalCommandCount += g_stats[i].users[k].commandCount;
 			}
 			
-			string line = g_stats[i].voice + ": " + totalCommandCount + " uses, " + g_stats[i].users.size() + " unique users\n";
+			string line = g_stats[i].voice;
+			
+			int padding = 20 - g_stats[i].voice.Length();
+			for (int k = 0; k < padding; k++)
+				line += " ";
+				
+			string count = totalCommandCount;
+			padding = 7 - count.Length();
+			for (int k = 0; k < padding; k++)
+				count += " ";
+			line += count;
+			
+			string users = g_stats[i].users.size();
+			padding = 8 - users.Length();
+			for (int k = 0; k < padding; k++)
+				users += " ";
+			line += users;
+			
+			totalLoadedSounds += g_stats[i].soundCount;
+			
+			string soundcnt = "" + g_stats[i].soundCount;
+			if (g_stats[i].soundCountTotal != g_stats[i].soundCount) {
+				padding = 3 - soundcnt.Length();
+				for (int k = 0; k < padding; k++)
+					soundcnt += " ";
+				soundcnt += " (" + g_stats[i].soundCountTotal + ")";
+			}
+			line += soundcnt;
+			
+			line += "\n";
 			g_PlayerFuncs.ClientPrint(plr, HUD_PRINTCONSOLE, line);
 		}
 	}
 
 	if (extraInfo) {
 		g_PlayerFuncs.ClientPrint(plr, HUD_PRINTCONSOLE, "No stats found for " + voice);
+	} else {
+		g_PlayerFuncs.ClientPrint(plr, HUD_PRINTCONSOLE, "--------------------------------------------\n");
+		g_PlayerFuncs.ClientPrint(plr, HUD_PRINTCONSOLE, "                                   " + totalLoadedSounds + " (total)\n");
+		g_PlayerFuncs.ClientPrint(plr, HUD_PRINTCONSOLE, "\nUses   = Number of times a voice line has been spoken.");
+		g_PlayerFuncs.ClientPrint(plr, HUD_PRINTCONSOLE, "\nUsers  = Number of unique players that have used the voice.");
+		g_PlayerFuncs.ClientPrint(plr, HUD_PRINTCONSOLE, "\nSounds = Number of custom sounds loaded. Total sounds are in\n");
+		g_PlayerFuncs.ClientPrint(plr, HUD_PRINTCONSOLE, "         parentheses if the voice also uses default sounds.\n\n");
 	}
 }
