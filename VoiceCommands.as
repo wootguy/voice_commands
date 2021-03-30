@@ -172,18 +172,8 @@ void PluginExit() {
 int total_precached_sounds = 0;
 
 bool isCustomSound(string path) {
-	bool isScientistDefault = path.Find("scientist/") == 0;
-	bool isBarneyDefault = path.Find("barney/") == 0 && path.Find("barney/ba_") != 0;
-	bool isSoldierDefault = path.Find("fgrunt/") == 0;
-	bool isTurretDefault = path.Find("turret/") == 0;
-	bool isBguardDefault = path.Find("bodyguard/") == 0;
-	bool isOtisDefault = path.Find("otis/") == 0;
-	bool isShockDefault = path.Find("shocktrooper/") == 0;
-	bool isFvoxDefault = path.Find("fvox/") == 0;
-
-	return path.Length() > 0 and path[0] != "!" and path.Find("scientist/") != 0
-			and !isBarneyDefault and !isScientistDefault && !isSoldierDefault && !isTurretDefault
-			and !isBguardDefault && !isOtisDefault && !isShockDefault && !isFvoxDefault;
+	string noExtPath = path.SubString(0, path.FindLastOf("."));
+	return path.Length() > 0 and path[0] != "!" and !g_default_sentence_sounds.exists(noExtPath);
 }
 
 void MapInit()
@@ -262,8 +252,13 @@ enum parse_mode {
 
 dictionary g_default_sentences;
 
+dictionary g_default_sentence_sounds; // sounds that are always precached
+
 void loadDefaultSentences()
 {
+	g_default_sentence_sounds.clear();
+	g_default_sentences.clear();
+	
 	string fpath = plugin_path + "default_sentences.txt";
 	dictionary maps;
 	File@ f = g_FileSystem.OpenFile( fpath, OpenFile::READ );
@@ -285,6 +280,43 @@ void loadDefaultSentences()
 			
 		array<string> parts = line.Split(" ");
 		if (parts.length() > 1) {
+			string folder = parts[1].SubString(0, parts[1].FindLastOf("/")+1);
+		
+			for (uint i = 1; i < parts.size(); i++) {
+				string sound = parts[i];
+				
+				int fidx = sound.FindLastOf("/");
+				if (fidx != -1) {
+					sound = sound.SubString(fidx+1);
+				}
+				
+				int pidx = sound.FindFirstOf("(");
+				int pidx2 = sound.FindFirstOf(")");
+				
+				if (pidx != -1) {
+					sound = sound.SubString(0, pidx);
+					pidx2 = sound.FindFirstOf(")");
+					
+					if (pidx2 < int(sound.Length()) and pidx2 != -1) {
+						sound = sound.SubString(pidx2+1);
+					}
+				} else if (pidx2 != -1) {
+					sound = ""; // space separated modifiers included in the split. No sound path here.
+				}
+				
+				sound.Replace(".", "");
+				sound.Replace(",", "");
+				
+				if (sound.Length() != 0) {
+					sound = folder + sound;
+					
+					if (!g_default_sentence_sounds.exists(sound)) {
+						g_default_sentence_sounds[sound] = true;
+					}
+				}
+			}
+			
+		
 			if (!g_default_sentences.exists(parts[0]))
 				continue; // don't care about sentences not used by any voice
 			if (parts[1].Find("(") != String::INVALID_INDEX)
