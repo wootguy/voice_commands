@@ -165,6 +165,10 @@ void PluginInit()
 	loadUsageStats();
 }
 
+void PluginExit() {
+	writeUsageStats();
+}
+
 int total_precached_sounds = 0;
 
 bool isCustomSound(string path) {
@@ -175,10 +179,11 @@ bool isCustomSound(string path) {
 	bool isBguardDefault = path.Find("bodyguard/") == 0;
 	bool isOtisDefault = path.Find("otis/") == 0;
 	bool isShockDefault = path.Find("shocktrooper/") == 0;
+	bool isFvoxDefault = path.Find("fvox/") == 0;
 
 	return path.Length() > 0 and path[0] != "!" and path.Find("scientist/") != 0
 			and !isBarneyDefault and !isScientistDefault && !isSoldierDefault && !isTurretDefault
-			and !isBguardDefault && !isOtisDefault && !isShockDefault;
+			and !isBguardDefault && !isOtisDefault && !isShockDefault && !isFvoxDefault;
 }
 
 void MapInit()
@@ -813,6 +818,22 @@ bool doCommand(CBasePlayer@ plr, const CCommand@ args)
 			}
 			if ( args[1] == "voice" )
 			{
+				if (args.ArgC() > 2) {
+					string voiceName = args[2].ToLowercase();
+					
+					for (uint i = 0; i < g_talkers_ordered.size(); i++) {
+						string talkerName = g_talkers_ordered[i];
+						if (talkerName.ToLowercase() == voiceName) {
+							state.talker_id = g_talkers_ordered[i];
+							g_PlayerFuncs.SayText(plr, "Your voice has been set to " + state.talker_id + "\n");
+							return true;
+						}
+					}
+					
+					g_PlayerFuncs.SayText(plr, "No voice named \"" + voiceName + "\" exists.\n");
+					
+					return true;
+				}
 				state.initMenu(plr, voiceSelectCallback, state.lastChatMenu != 0);
 				
 				state.menu.SetTitle("Voice selection:\n");
@@ -873,7 +894,7 @@ bool doCommand(CBasePlayer@ plr, const CCommand@ args)
 			
 			g_PlayerFuncs.SayText(plr, "Voice command usage:\n");
 			g_PlayerFuncs.SayText(plr, 'Say ".vc X" or ".vc global X" to open a command menu (where X = 1 or 2).\n');
-			g_PlayerFuncs.SayText(plr, 'Say ".vc voice" to select a different voice.\n');
+			g_PlayerFuncs.SayText(plr, 'Say ".vc voice" to open the voice menu or say ".vc voice X" to directly set your voice.\n');
 			g_PlayerFuncs.SayText(plr, 'Say ".vc pitch X" to change your voice pitch (where X = 1-255).\n');
 			g_PlayerFuncs.SayText(plr, 'Say ".vc vol X" to adjust all voice volumes (where X = 0-100).\n');
 			g_PlayerFuncs.SayText(plr, 'Type ".vc stats" or ".vc stats <voice name>" in console to see usage statistics.\n');
