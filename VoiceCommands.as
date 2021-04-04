@@ -1023,7 +1023,7 @@ void writeUsageStats() {
 	if( f.IsOpen() )
 	{
 		int numWritten = 0;
-		for (uint i = 0; i < g_stats.size(); i++) {			
+		for (uint i = 0; i < g_stats.size(); i++) {
 			f.Write("[" + g_stats[i].voice + "]\n");
 			for (uint k = 0; k < g_stats[i].users.size(); k++) {
 				f.Write(g_stats[i].users[k].steamid + "\\" + g_stats[i].users[k].name + "\\" + g_stats[i].users[k].commandCount + "\n");
@@ -1039,6 +1039,8 @@ void writeUsageStats() {
 }
 
 void loadUsageStats() {
+	g_stats.resize(0);
+	
 	File@ file = g_FileSystem.OpenFile(voiceStatsFile, OpenFile::READ);
 
 	string tempVoiceName = "";
