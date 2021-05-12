@@ -1,7 +1,10 @@
+#include "../SoundCache/StartSoundMsg"
+
 class Talker
 {
 	string name; // What you see in the voice selection menu
 	dictionary phrases; // each value is a @Phrase
+	string packFile; // path to packed sound file, if one exists
 	
 	Talker(string displayName) {
 		name = displayName;
@@ -56,6 +59,11 @@ class Phrase
 	float gain; 	   // 0 to 6, anything above 1.0 needs to be a whole number, anything between 0 and 1 is a percentage
 	int id;			   // unique
 	
+	// packed sound vars (optional)
+	bool isPacked = false;
+	float offset = 0;
+	float duration = 0;
+	
 	Phrase(string talker, string category, float gainVal, string filePath)
 	{
 		talkerId = talker;
@@ -91,6 +99,9 @@ class PlayerState
 	float lastChatTime; // time this player last used a voice command
 	int lastPhraseId;
 	
+	// sounds scheduled to be stopped (needs to be cleared when playing a new sound or else it stops early)
+	array<CScheduledFunction@> stopSchedules;
+	
 	void initMenu(CBasePlayer@ plr, TextMenuPlayerSlotCallback@ callback, bool destroyOldMenu)
 	{
 		destroyOldMenu = false; // Unregistering throws an error for whatever reason. TODO: Ask the big man why
@@ -110,6 +121,8 @@ class PlayerState
 		menu.Open(10, 0, plr);
 	}
 }
+
+const float PACK_GAP = 0.2f; // seconds of silence between sounds in packed voice files
 
 dictionary g_talkers; // all the voice data
 array<Phrase@> g_all_phrases; // for straight-forward precaching, duplicates the data in g_talkers
@@ -135,12 +148,11 @@ bool debug_log = false;
 bool reload_next_map = false;
 string default_voice = 'Scientist';
 string plugin_path = 'scripts/plugins/voice_commands/';
-// All possible sound channels we can use
-array<SOUND_CHANNEL> channels = {CHAN_STATIC, CHAN_VOICE, CHAN_STREAM, CHAN_BODY, CHAN_ITEM, CHAN_AUTO, CHAN_WEAPON};
+// Sound channels that don't don't often conflict with player actions
+array<SOUND_CHANNEL> channels = {CHAN_STATIC, CHAN_STREAM, CHAN_VOICE};
 
 void print(string text) { g_Game.AlertMessage( at_console, "[VoiceCommands] " + text); }
 void println(string text) { print(text + "\n"); }
-void printSuccess() { g_Game.AlertMessage( at_console, "SUCCESS\n"); }
 
 void PluginInit()
 {
@@ -191,6 +203,9 @@ void MapInit()
 	dictionary unique_sounds;
 	
 	for (uint i = 0; i < g_all_phrases.length(); i++) {
+		if (g_all_phrases[i].isPacked) {
+			continue;
+		}
 		string soundFile = g_all_phrases[i].soundFile;
 		if (!g_use_sentences.GetBool() and g_all_phrases[i].soundFile.Length() > 0 and g_all_phrases[i].soundFile[0] == "!") {
 			g_default_sentences.get(soundFile, soundFile);
@@ -202,6 +217,15 @@ void MapInit()
 		
 		if (isCustomSound(soundFile)) {
 			unique_sounds[soundFile.ToLowercase()] = true;
+		}
+	}
+	
+	array<string>@ talkerKeys = g_talkers.getKeys();
+	for (uint i = 0; i < talkerKeys.length(); i++) {
+		Talker@ talker = cast< Talker@ >(g_talkers[talkerKeys[i]]);
+		if (talker.packFile.Length() > 0) {
+			g_SoundSystem.PrecacheSound(talker.packFile);
+			g_Game.PrecacheGeneric("sound/" + talker.packFile);
 		}
 	}
 	
@@ -505,11 +529,75 @@ void loadVoiceData()
 		}
 		else
 			g_Game.AlertMessage( at_console, "Unable to open voice data file:\n" + voicePath + "\n");
+			
+		loadPackInfo(talker.name);
 		
 		//g_Game.AlertMessage( at_console, "LOAD voice: '" + talker.name + "'\n");
 	}
 	
 	
+}
+
+void loadPackInfo(string voiceName)
+{
+	Talker@ talker = cast< Talker@ >( g_talkers[voiceName] );
+	string packPath = plugin_path + "voices/" + talker.name + ".pack";
+	File@ f = g_FileSystem.OpenFile( packPath, OpenFile::READ );
+	
+	if( f is null || !f.IsOpen() ) {
+		//println("No pack info found for voice " + voiceName);
+		return;
+	}
+
+	string line;
+	bool readPackPath = false;
+	while( !f.EOFReached() )
+	{
+		f.ReadLine(line);			
+		line.Trim();
+		line.Trim('\r'); // Linux won't strip these during ReadLine or Trim
+		
+		if (line.Length() == 0 or line[0] == '/')
+			continue;
+			
+		if (!readPackPath) {
+			talker.packFile = line;
+			readPackPath = true;
+			continue;
+		}
+
+		array<string>@ params = line.Split(":");
+		params[0].Trim();
+		params[1].Trim();
+		params[2].Trim();
+		
+		float offset = atof(params[0]);
+		float duration = atof(params[1]);
+		string packSound = params[2].ToLowercase();
+		
+		bool foundPhrase = false;
+		array<string>@ phrase_keys = talker.phrases.getKeys();		
+		for (uint i = 0; i < phrase_keys.length() and !foundPhrase; i++) {
+			array<Phrase@>@ catphrases = cast< array<Phrase@>@ >(talker.phrases[phrase_keys[i]]);
+			
+			for (uint k = 0; k < catphrases.length(); k++) {
+				string soundFile = catphrases[k].soundFile;
+				soundFile = soundFile.ToLowercase();
+				
+				if (packSound == soundFile) {				
+					catphrases[k].isPacked = true;
+					catphrases[k].offset = offset;
+					catphrases[k].duration = duration;
+					foundPhrase = true;
+					break;
+				}
+			}
+		}
+		
+		if (!foundPhrase) {
+			println(talker.name + ".pack references unused sound:" + packSound);
+		}
+	}
 }
 
 void updatePlayerList()
@@ -671,6 +759,9 @@ void voiceMenuCallback(CTextMenu@ menu, CBasePlayer@ plr, int page, const CTextM
 	if (!g_use_sentences.GetBool() and soundFile.Length() > 0 and soundFile[0] == "!") {
 		g_default_sentences.get(soundFile, soundFile); // get the default sound file for the sentence
 	}
+	if (phrase.isPacked) {
+		soundFile = talker.packFile;
+	}
 	
 	for (uint i = 0; i < g_players.length(); i++)
 	{
@@ -686,8 +777,25 @@ void voiceMenuCallback(CTextMenu@ menu, CBasePlayer@ plr, int page, const CTextM
 			
 			for (uint g = 0; g < channels.length(); g++)
 			{
-				if (g < gain)
-					g_SoundSystem.PlaySound(plr.edict(), channels[g], soundFile, listenVol, attn, 0, state.pitch, listener.entindex());
+				if (g < gain) {
+					if (phrase.isPacked) {
+						StartSoundMsgParams params;
+						params.sample = soundFile;
+						params.channel = channels[g];
+						params.entindex = plr.entindex();
+						params.offset = phrase.offset;
+						params.volume = listenVol;
+						params.attenuation = attn;
+						
+						StartSoundMsg(params, MSG_ONE, listener.edict());
+						
+						// no way to play for a specific duration, so stopping manually when the sound ends (with some buffer for inconsistent ping)
+						g_Scheduler.RemoveTimer(state.stopSchedules[g]);
+						@state.stopSchedules[g] = @g_Scheduler.SetTimeout("delay_stop_sound", phrase.duration + PACK_GAP*0.5f, EHandle(plr), int(channels[g]), soundFile);
+					} else {
+						g_SoundSystem.PlaySound(plr.edict(), channels[g], soundFile, listenVol, attn, 0, state.pitch, listener.entindex());
+					}
+				}
 				else
 					g_SoundSystem.StopSound(plr.edict(), channels[g], state.lastSample, false);
 			}
@@ -701,8 +809,13 @@ void voiceMenuCallback(CTextMenu@ menu, CBasePlayer@ plr, int page, const CTextM
 	
 	// Show the command sprite
 	for (uint i = 0; i < g_commands.length(); i++)
-		if (g_commands[i].name == phraseId)
-			plr.ShowOverheadSprite(g_commands[i].sprite, 51.0f, 2.5f);
+		if (g_commands[i].name == phraseId) {
+			float duration = 2.5f;
+			if (phrase.isPacked) {
+				duration = Math.max(phrase.duration + PACK_GAP*0.5f, 1.5f);
+			}
+			plr.ShowOverheadSprite(g_commands[i].sprite, 51.0f, duration);
+		}
 	
 	// Monster reactions to sounds
 	if (g_monster_reactions.GetBool())
@@ -721,6 +834,15 @@ void voiceMenuCallback(CTextMenu@ menu, CBasePlayer@ plr, int page, const CTextM
 		g_PlayerFuncs.SayTextAll(plr, "Idx: " + idx + "/" + (phrases.length()-1) + " Gain: " + gain + ", Volume: " + vol + ", Pitch: " + state.pitch + ", Sound File: " + soundFile + "\n");
 		
 	logVoiceStat(plr, talker.name);
+}
+
+void delay_stop_sound(EHandle h_plr, int channel, string sample) {
+	CBasePlayer@ plr = cast<CBasePlayer@>(h_plr.GetEntity());
+	if (plr is null) {
+		return;
+	}
+	
+	g_SoundSystem.StopSound(plr.edict(), SOUND_CHANNEL(channel), sample, false);
 }
 
 // handles player voice selection
@@ -753,6 +875,7 @@ PlayerState@ getPlayerState(CBasePlayer@ plr)
 		state.pitch = 100;
 		state.volume = 1.0f;
 		state.lastChatTime = 0;
+		state.stopSchedules.resize(channels.size());
 		player_states[steamId] = state;
 	}
 	return cast<PlayerState@>( player_states[steamId] );
