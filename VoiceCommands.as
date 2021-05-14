@@ -784,6 +784,7 @@ void voiceMenuCallback(CTextMenu@ menu, CBasePlayer@ plr, int page, const CTextM
 						params.channel = channels[g];
 						params.entindex = plr.entindex();
 						params.offset = phrase.offset;
+						params.pitch = state.pitch;
 						params.volume = listenVol;
 						params.attenuation = attn;
 						
@@ -791,7 +792,8 @@ void voiceMenuCallback(CTextMenu@ menu, CBasePlayer@ plr, int page, const CTextM
 						
 						// no way to play for a specific duration, so stopping manually when the sound ends (with some buffer for inconsistent ping)
 						g_Scheduler.RemoveTimer(state.stopSchedules[g]);
-						@state.stopSchedules[g] = @g_Scheduler.SetTimeout("delay_stop_sound", phrase.duration + PACK_GAP*0.5f, EHandle(plr), int(channels[g]), soundFile);
+						float duration = (phrase.duration + PACK_GAP*0.5f) * (1.0f / (state.pitch*0.01f));
+						@state.stopSchedules[g] = @g_Scheduler.SetTimeout("delay_stop_sound", duration, EHandle(plr), int(channels[g]), soundFile);
 					} else {
 						g_SoundSystem.PlaySound(plr.edict(), channels[g], soundFile, listenVol, attn, 0, state.pitch, listener.entindex());
 					}
@@ -842,7 +844,32 @@ void delay_stop_sound(EHandle h_plr, int channel, string sample) {
 		return;
 	}
 	
+	if (plr.pev.effects & EF_NODRAW != 0) {
+		stopsound_bug_workaround(h_plr, 0, 0);
+	}
+	
 	g_SoundSystem.StopSound(plr.edict(), SOUND_CHANNEL(channel), sample, false);
+}
+
+// stopsound doesn't work on players with EF_NODRAW (gibbed), so this temporarily removes the flag
+// but makes them invisible, then resets the flag after stopsound is sent
+void stopsound_bug_workaround(EHandle h_plr, int oldRendermode, float oldRenderamt) {
+	CBasePlayer@ plr = cast<CBasePlayer@>(h_plr.GetEntity());
+	if (plr is null) {
+		return;
+	}
+	
+	if (plr.pev.effects & EF_NODRAW != 0) {
+		g_Scheduler.SetTimeout("stopsound_bug_workaround", 0.05f, h_plr, plr.pev.rendermode, plr.pev.renderamt);
+	
+		plr.pev.effects &= ~EF_NODRAW;		
+		plr.pev.rendermode = 1;
+		plr.pev.renderamt = 0;
+	} else {
+		plr.pev.effects |= EF_NODRAW;
+		plr.pev.rendermode = oldRendermode;
+		plr.pev.renderamt = oldRenderamt;
+	}
 }
 
 // handles player voice selection
