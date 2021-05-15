@@ -223,9 +223,12 @@ void MapInit()
 	array<string>@ talkerKeys = g_talkers.getKeys();
 	for (uint i = 0; i < talkerKeys.length(); i++) {
 		Talker@ talker = cast< Talker@ >(g_talkers[talkerKeys[i]]);
-		if (talker.packFile.Length() > 0) {
-			g_SoundSystem.PrecacheSound(talker.packFile);
-			g_Game.PrecacheGeneric("sound/" + talker.packFile);
+		string packFile = talker.packFile;
+		
+		if (packFile.Length() > 0) {
+			g_SoundSystem.PrecacheSound(packFile);
+			g_Game.PrecacheGeneric("sound/" + packFile);
+			unique_sounds[packFile.ToLowercase()] = true;
 		}
 	}
 	
@@ -577,19 +580,18 @@ void loadPackInfo(string voiceName)
 		
 		bool foundPhrase = false;
 		array<string>@ phrase_keys = talker.phrases.getKeys();		
-		for (uint i = 0; i < phrase_keys.length() and !foundPhrase; i++) {
+		for (uint i = 0; i < phrase_keys.length(); i++) {
 			array<Phrase@>@ catphrases = cast< array<Phrase@>@ >(talker.phrases[phrase_keys[i]]);
 			
 			for (uint k = 0; k < catphrases.length(); k++) {
 				string soundFile = catphrases[k].soundFile;
 				soundFile = soundFile.ToLowercase();
 				
-				if (packSound == soundFile) {				
+				if (packSound == soundFile) {
 					catphrases[k].isPacked = true;
 					catphrases[k].offset = offset;
 					catphrases[k].duration = duration;
 					foundPhrase = true;
-					break;
 				}
 			}
 		}
@@ -762,6 +764,7 @@ void voiceMenuCallback(CTextMenu@ menu, CBasePlayer@ plr, int page, const CTextM
 	if (phrase.isPacked) {
 		soundFile = talker.packFile;
 	}
+	float soundDuration = (phrase.duration + PACK_GAP*0.5f) * (1.0f / (state.pitch*0.01f));
 	
 	for (uint i = 0; i < g_players.length(); i++)
 	{
@@ -792,8 +795,8 @@ void voiceMenuCallback(CTextMenu@ menu, CBasePlayer@ plr, int page, const CTextM
 						
 						// no way to play for a specific duration, so stopping manually when the sound ends (with some buffer for inconsistent ping)
 						g_Scheduler.RemoveTimer(state.stopSchedules[g]);
-						float duration = (phrase.duration + PACK_GAP*0.5f) * (1.0f / (state.pitch*0.01f));
-						@state.stopSchedules[g] = @g_Scheduler.SetTimeout("delay_stop_sound", duration, EHandle(plr), int(channels[g]), soundFile);
+						
+						@state.stopSchedules[g] = @g_Scheduler.SetTimeout("delay_stop_sound", soundDuration, EHandle(plr), int(channels[g]), soundFile);
 					} else {
 						g_SoundSystem.PlaySound(plr.edict(), channels[g], soundFile, listenVol, attn, 0, state.pitch, listener.entindex());
 					}
@@ -814,7 +817,7 @@ void voiceMenuCallback(CTextMenu@ menu, CBasePlayer@ plr, int page, const CTextM
 		if (g_commands[i].name == phraseId) {
 			float duration = 2.5f;
 			if (phrase.isPacked) {
-				duration = Math.max(phrase.duration + PACK_GAP*0.5f, 1.5f);
+				duration = Math.min(Math.max(soundDuration, 1.5f), 30.0f);
 			}
 			plr.ShowOverheadSprite(g_commands[i].sprite, 51.0f, duration);
 		}
@@ -1051,8 +1054,8 @@ bool doCommand(CBasePlayer@ plr, const CCommand@ args)
 			if ( args[1] == "pitch" and args.ArgC() > 2 )
 			{		
 				int newPitch = atoi( args[2] );
-				if (newPitch < 1)
-					newPitch = 1;
+				if (newPitch < 25)
+					newPitch = 25;
 				if (newPitch > 255)
 					newPitch = 255;
 					
