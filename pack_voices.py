@@ -3,6 +3,7 @@ import os, sys, subprocess, shutil, base64, re
 gap = 0.2   # seconds of silence between sounds
 gap_fname = 'gap.wav'
 temp_dir = 'temp'
+quiet = True
 
 g_default_sentence_sounds = None
 
@@ -85,6 +86,9 @@ for voice in os.listdir('../voices'):
 	file = open(voicePath, 'r', encoding='utf-8')
 	safe_voice = os.path.splitext(voice)[0].lower().replace(" ", "_")
 
+	if 'Rushia' not in voice:
+		continue
+
 	print("PACK VOICE: " + voice)
 	
 	all_sounds = []
@@ -125,6 +129,7 @@ for voice in os.listdir('../voices'):
 		path = ''
 		
 		tryPaths = [
+			'../sound',
 			'../../../../../svencoop_addon/sound',
 			'../../../../../svencoop/sound',
 			'../../../../../svencoop_downloads/sound'
@@ -156,7 +161,7 @@ for voice in os.listdir('../voices'):
 		offset += duration + gap
 		
 		# add a gap to the file
-		cmd = 'ffmpeg -i %s -i %s -filter_complex concat=n=2:v=0:a=1[out] -map [out] -c:a pcm_u8 -f wav -v quiet -y temp.wav' % (path, gap_fname)
+		cmd = 'ffmpeg -i %s -i %s -filter_complex concat=n=2:v=0:a=1[out] -map [out] -c:a pcm_u8 -f wav %s -y temp.wav' % (path, gap_fname, '-v quiet' if quiet else '')
 		os.system(cmd)
 		os.remove(path)
 		os.rename('temp.wav', path)
@@ -169,7 +174,7 @@ for voice in os.listdir('../voices'):
 	
 	print("Writing %s" % output_file)
 	#codec = '-c:a adpcm_ima_wav' # pcm_u8
-	codec = '-c:a pcm_u8'
+	codec = '-c:a pcm_u8 -ac 1 -ar 22050'
 	cmd = "ffmpeg %s -filter_complex %s -map [out] %s -y %s" % (args, filter, codec, output_file)
 	os.system(cmd)
 	print(cmd)
