@@ -1131,6 +1131,16 @@ class VoiceStat {
 
 array<VoiceStat> g_stats;
 
+void update_stat_user_name(string steamid, string newname) {
+	for (uint i = 0; i < g_stats.size(); i++) {
+		for (uint k = 0; k < g_stats[i].users.size(); k++) {
+			if (steamid == g_stats[i].users[k].steamid) {
+				g_stats[i].users[k].name = newname;
+			}
+		}
+	}
+}
+
 void logVoiceStat(CBasePlayer@ plr, string voice) {
 	if (voice.Length() == 0) {
 		return;
@@ -1145,6 +1155,9 @@ void logVoiceStat(CBasePlayer@ plr, string voice) {
 			for (uint k = 0; k < g_stats[i].users.size(); k++) {
 				if (steamId == g_stats[i].users[k].steamid) {
 					g_stats[i].users[k].commandCount++;
+					if (g_stats[i].users[k].name != plr.pev.netname) {
+						update_stat_user_name(steamId, plr.pev.netname);
+					}
 					return;
 				}
 			}
