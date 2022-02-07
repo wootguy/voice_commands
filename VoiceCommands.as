@@ -1,10 +1,14 @@
 #include "../SoundCache/StartSoundMsg"
 
+const int ALWAYS_LOAD_SOUND_LIMIT = 10; // fewer sounds than this and the voice will always be loaded
+
 class Talker
 {
 	string name; // What you see in the voice selection menu
 	dictionary phrases; // each value is a @Phrase
 	string packFile; // path to packed sound file, if one exists
+	bool isPrecached = false;
+	bool alwaysPrecache = false; // for voices that have very few custom sounds
 	
 	Talker(string displayName) {
 		name = displayName;
@@ -91,6 +95,7 @@ class PlayerState
 {
 	CTextMenu@ menu;
 	string talker_id;  // voice this player is using
+	string want_talker_id; // the voice this player wants to use but isn't precached yet
 	int pitch; 		   // voice pitch adjustment (100 = normal, range = 1-1000)
 	float volume;	   // volume of all voice commands (spoken or heard)
 	int lastChatMenu;  // if non-zero, player currently has a chat menu open
@@ -98,6 +103,7 @@ class PlayerState
 	string lastSample; // store the last soundFile played so we can stop it later
 	float lastChatTime; // time this player last used a voice command
 	int lastPhraseId;
+	bool wasConnectedLastMap;
 	
 	// sounds scheduled to be stopped (needs to be cleared when playing a new sound or else it stops early)
 	array<CScheduledFunction@> stopSchedules;
@@ -125,6 +131,7 @@ class PlayerState
 const float PACK_GAP = 0.2f; // seconds of silence between sounds in packed voice files
 
 dictionary g_talkers; // all the voice data
+dictionary g_talker_name_upper; // get upper-cased name from all-lowercase name
 array<Phrase@> g_all_phrases; // for straight-forward precaching, duplicates the data in g_talkers
 array<string> g_talkers_ordered; // used to display talkers/voices in the correct order
 array<CommandGroup@> g_commands; // all of em
@@ -150,6 +157,8 @@ string default_voice = 'Scientist';
 string plugin_path = 'scripts/plugins/voice_commands/';
 // Sound channels that don't don't often conflict with player actions
 array<SOUND_CHANNEL> channels = {CHAN_STATIC, CHAN_STREAM, CHAN_VOICE};
+
+string g_previous_map;
 
 void print(string text) { g_Game.AlertMessage( at_console, "[VoiceCommands] " + text); }
 void println(string text) { print(text + "\n"); }
@@ -191,9 +200,9 @@ bool isCustomSound(string path) {
 void MapInit()
 {
 	if (reload_next_map) {
+		loadDefaultSentences();
 		loadConfig();
 		loadVoiceData();
-		loadDefaultSentences();
 		loadUsageStats();
 		reload_next_map = false;
 	}
@@ -202,10 +211,22 @@ void MapInit()
 	
 	dictionary unique_sounds;
 	
+	if (string(g_Engine.mapname) != g_previous_map) {
+		updatePrecachedVoices();
+	}
+	
+	g_previous_map = g_Engine.mapname;
+	
 	for (uint i = 0; i < g_all_phrases.length(); i++) {
 		if (g_all_phrases[i].isPacked) {
 			continue;
 		}
+		
+		Talker@ talker = cast< Talker@ >(g_all_phrases[i].talkerId);
+		if (!talker.isPrecached) {
+			continue;
+		}
+		
 		string soundFile = g_all_phrases[i].soundFile;
 		if (!g_use_sentences.GetBool() and g_all_phrases[i].soundFile.Length() > 0 and g_all_phrases[i].soundFile[0] == "!") {
 			g_default_sentences.get(soundFile, soundFile);
@@ -224,6 +245,10 @@ void MapInit()
 	for (uint i = 0; i < talkerKeys.length(); i++) {
 		Talker@ talker = cast< Talker@ >(g_talkers[talkerKeys[i]]);
 		string packFile = talker.packFile;
+		
+		if (!talker.isPrecached) {
+			continue;
+		}
 		
 		if (packFile.Length() > 0) {
 			g_SoundSystem.PrecacheSound(packFile);
@@ -250,6 +275,62 @@ void MapInit()
 	}
 }
 
+void updatePrecachedVoices() {	
+	array<string>@ talkerKeys = g_talkers.getKeys();
+	for (uint i = 0; i < talkerKeys.length(); i++) {
+		Talker@ talker = cast< Talker@ >(g_talkers[talkerKeys[i]]);
+		if (!talker.alwaysPrecache) {
+			talker.isPrecached = false;
+		}
+	}
+	
+	int total_loaded_voices = 0;
+
+	array<string>@ stateKeys = player_states.getKeys();
+	for (uint i = 0; i < stateKeys.length(); i++)
+	{
+		PlayerState@ state = cast<PlayerState@>( player_states[stateKeys[i]] );	
+		
+		if (state.wasConnectedLastMap) {
+			if (state.want_talker_id.Length() > 0) {
+				state.talker_id = state.want_talker_id;
+			}
+		
+			Talker@ talker = cast< Talker@ >(g_talkers[state.talker_id]);
+			if (!talker.isPrecached) {
+				total_loaded_voices++;
+			}
+			talker.isPrecached = true;
+			
+		}
+	}
+	
+	// precache the most popular ones too
+	if (total_loaded_voices < 32) {
+		g_stats.sort(function(a,b) { return a.totalUses > b.totalUses; });
+
+		for (uint i = 0; i < g_stats.size(); i++) {
+			if (!g_stats[i].isValid) {
+				continue; // voice not loaded
+			}
+			
+			string upperName;
+			g_talker_name_upper.get(g_stats[i].voice, upperName);
+			
+			Talker@ talker = cast< Talker@ >(g_talkers[upperName]);
+			
+			if (!talker.isPrecached) {
+				total_loaded_voices++;
+				talker.isPrecached = true;
+				
+				if (total_loaded_voices >= 32) {
+					break;
+				}
+			}
+		}
+	}
+}
+
 HookReturnCode MapChange()
 {
 	// set all menus to null. Apparently this fixes crashes for some people:
@@ -260,6 +341,20 @@ HookReturnCode MapChange()
 		PlayerState@ state = cast<PlayerState@>( player_states[stateKeys[i]] );
 		if (state.menu !is null)
 			@state.menu = null;
+			
+		state.wasConnectedLastMap = false;
+	}
+	
+	for ( int i = 1; i <= g_Engine.maxClients; i++ )
+	{
+		CBasePlayer@ p = g_PlayerFuncs.FindPlayerByIndex(i);
+		
+		if (p is null or !p.IsConnected()) {
+			continue;
+		}
+		
+		PlayerState@ state = getPlayerState(p);
+		state.wasConnectedLastMap = true;
 	}
 	
 	writeUsageStats();
@@ -435,8 +530,12 @@ void loadConfig()
 			}
 			else if (parseMode == PARSE_VOICES)
 			{
+				string lowerLine = line;
+				lowerLine = lowerLine.ToLowercase();
+				
 				g_talkers[line] = @Talker(line);
 				g_talkers_ordered.insertLast(line);
+				g_talker_name_upper[lowerLine] = line;
 				//g_Game.AlertMessage( at_console, "Got voice: '" + line + "'\n");
 			}
 			else if (parseMode == PARSE_CMDS_1 or parseMode == PARSE_CMDS_2 or parseMode == PARSE_CMDS_3 or parseMode == PARSE_CMDS_4 or parseMode == PARSE_SPECIAL_CMDS)
@@ -535,10 +634,12 @@ void loadVoiceData()
 			
 		loadPackInfo(talker.name);
 		
+		if (talker.getCustomSoundCount() < ALWAYS_LOAD_SOUND_LIMIT) {
+			talker.isPrecached = talker.alwaysPrecache = true;
+		}
+		
 		//g_Game.AlertMessage( at_console, "LOAD voice: '" + talker.name + "'\n");
 	}
-	
-	
 }
 
 void loadPackInfo(string voiceName)
@@ -882,10 +983,19 @@ void voiceSelectCallback(CTextMenu@ menu, CBasePlayer@ plr, int page, const CTex
 		return;
 	}
 	PlayerState@ state = getPlayerState(plr);
-	state.talker_id;
-	item.m_pUserData.retrieve(state.talker_id);
+	string selection;
+	item.m_pUserData.retrieve(selection);
 	
-	g_PlayerFuncs.SayText(plr, "Your voice has been set to " + item.m_szName + "\n");
+	Talker@ talker = cast< Talker@ >(g_talkers[selection]);
+	
+	if (talker.isPrecached) {
+		state.talker_id = selection;
+		state.want_talker_id = selection;
+		g_PlayerFuncs.SayText(plr, "Your voice has been set to " + state.talker_id + ".\n");
+	} else {
+		state.want_talker_id = selection;
+		g_PlayerFuncs.SayText(plr, "\"" + selection + "\" isn't loaded yet. Your voice will continue to be \"" + state.talker_id + "\" until a different map is loaded.\n");
+	}
 }
 
 // Will create a new state if the requested one does not exit
@@ -1021,11 +1131,13 @@ bool doCommand(CBasePlayer@ plr, const CCommand@ args)
 				}
 				state.initMenu(plr, voiceSelectCallback, state.lastChatMenu != 0);
 				
-				state.menu.SetTitle("Voice selection:\n");
+				state.menu.SetTitle("\\yVoice selection:\n");
 				
 				// show a list of all voices
-				for (uint i = 0; i < g_talkers_ordered.length(); i++)
-					state.menu.AddItem(g_talkers_ordered[i], any(g_talkers_ordered[i]));
+				for (uint i = 0; i < g_talkers_ordered.length(); i++) {
+					Talker@ talker = cast< Talker@ >(g_talkers[g_talkers_ordered[i]]);
+					state.menu.AddItem((talker.isPrecached ? "\\w" : "\\r") + g_talkers_ordered[i] + "\\y", any(g_talkers_ordered[i]));
+				}
 				
 				state.openMenu(plr);
 				state.lastChatMenu = 0;	
@@ -1310,11 +1422,12 @@ void showVoiceStats(CBasePlayer@ plr, string voice) {
 	g_stats.sort(function(a,b) { return a.totalUses > b.totalUses; });
 	
 	if (!extraInfo) {
-		g_PlayerFuncs.ClientPrint(plr, HUD_PRINTCONSOLE, "\nVoice               Uses   Users   Sounds");
-		g_PlayerFuncs.ClientPrint(plr, HUD_PRINTCONSOLE, "\n--------------------------------------------\n");
+		g_PlayerFuncs.ClientPrint(plr, HUD_PRINTCONSOLE, "\n    Voice               Uses   Users   Sounds");
+		g_PlayerFuncs.ClientPrint(plr, HUD_PRINTCONSOLE, "\n--------------------------------------------------\n");
 	}
 
 	int totalLoadedSounds = 0;
+	int num = 0;
 
 	for (uint i = 0; i < g_stats.size(); i++) {
 		if (!g_stats[i].isValid) {
@@ -1368,13 +1481,29 @@ void showVoiceStats(CBasePlayer@ plr, string voice) {
 			g_PlayerFuncs.ClientPrint(plr, HUD_PRINTCONSOLE, line);
 			return;
 		} else {
+			num += 1;
 			int totalCommandCount = 0;
 			
 			for (uint k = 0; k < g_stats[i].users.size(); k++) {
 				totalCommandCount += g_stats[i].users[k].commandCount;
 			}
 			
-			string line = g_stats[i].voice;
+			string upperName;
+			g_talker_name_upper.get(g_stats[i].voice, upperName);
+			Talker@ talker = cast< Talker@ >(g_talkers[upperName]);
+			
+			string snum = num < 10 ? " " + num : "" + num;
+			string tag = "  ";
+			
+			if (talker !is null) {
+				if (talker.alwaysPrecache) {
+					tag = "~ ";
+				} else if (talker.isPrecached) {
+					tag = "* ";
+				}
+			}
+			
+			string line = tag + snum + ") " + g_stats[i].voice;
 			
 			int padding = 20 - g_stats[i].voice.Length();
 			for (int k = 0; k < padding; k++)
@@ -1411,11 +1540,14 @@ void showVoiceStats(CBasePlayer@ plr, string voice) {
 	if (extraInfo) {
 		g_PlayerFuncs.ClientPrint(plr, HUD_PRINTCONSOLE, "No stats found for " + voice);
 	} else {
-		g_PlayerFuncs.ClientPrint(plr, HUD_PRINTCONSOLE, "--------------------------------------------\n");
+		g_PlayerFuncs.ClientPrint(plr, HUD_PRINTCONSOLE, "--------------------------------------------------\n");
 		g_PlayerFuncs.ClientPrint(plr, HUD_PRINTCONSOLE, "                                   " + totalLoadedSounds + " (total)\n");
 		g_PlayerFuncs.ClientPrint(plr, HUD_PRINTCONSOLE, "\nUses   = Number of times a voice line has been spoken.");
 		g_PlayerFuncs.ClientPrint(plr, HUD_PRINTCONSOLE, "\nUsers  = Number of unique players that have used the voice.");
 		g_PlayerFuncs.ClientPrint(plr, HUD_PRINTCONSOLE, "\nSounds = Number of custom sounds loaded. Total sounds are in\n");
-		g_PlayerFuncs.ClientPrint(plr, HUD_PRINTCONSOLE, "         parentheses if the voice also uses default sounds.\n\n");
+		g_PlayerFuncs.ClientPrint(plr, HUD_PRINTCONSOLE, "         parentheses if the voice also uses default sounds.");
+		g_PlayerFuncs.ClientPrint(plr, HUD_PRINTCONSOLE, "\n*      = Voice is currently loaded. The most popular voices\n");
+		g_PlayerFuncs.ClientPrint(plr, HUD_PRINTCONSOLE, "         are loaded unless someone chooses a less popular voice.");
+		g_PlayerFuncs.ClientPrint(plr, HUD_PRINTCONSOLE, "\n~      = Voice is always loaded because it uses few custom sounds.\n\n");
 	}
 }
