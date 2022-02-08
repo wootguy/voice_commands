@@ -986,16 +986,7 @@ void voiceSelectCallback(CTextMenu@ menu, CBasePlayer@ plr, int page, const CTex
 	string selection;
 	item.m_pUserData.retrieve(selection);
 	
-	Talker@ talker = cast< Talker@ >(g_talkers[selection]);
-	
-	if (talker.isPrecached) {
-		state.talker_id = selection;
-		state.want_talker_id = selection;
-		g_PlayerFuncs.SayText(plr, "Your voice has been set to " + state.talker_id + ".\n");
-	} else {
-		state.want_talker_id = selection;
-		g_PlayerFuncs.SayText(plr, "\"" + selection + "\" isn't loaded yet. Your voice will continue to be \"" + state.talker_id + "\" until a different map is loaded.\n");
-	}
+	chooseVoice(plr, selection);
 }
 
 // Will create a new state if the requested one does not exit
@@ -1081,6 +1072,20 @@ void openChatMenu(PlayerState@ state, CBasePlayer@ plr, int menuId, bool global)
 	state.openMenu(plr);
 }
 
+void chooseVoice(CBasePlayer@ plr, string selection) {
+	PlayerState@ state = getPlayerState(plr);
+	Talker@ talker = cast< Talker@ >(g_talkers[selection]);
+	
+	if (talker.isPrecached) {
+		state.talker_id = selection;
+		state.want_talker_id = selection;
+		g_PlayerFuncs.SayText(plr, "Your voice has been set to " + state.talker_id + ".\n");
+	} else {
+		state.want_talker_id = selection;
+		g_PlayerFuncs.SayText(plr, "\"" + selection + "\" isn't loaded yet. Your voice will continue to be \"" + state.talker_id + "\" until a different map is loaded.\n");
+	}
+}
+
 bool doCommand(CBasePlayer@ plr, const CCommand@ args)
 {
 	PlayerState@ state = getPlayerState(plr);
@@ -1119,8 +1124,7 @@ bool doCommand(CBasePlayer@ plr, const CCommand@ args)
 					for (uint i = 0; i < g_talkers_ordered.size(); i++) {
 						string talkerName = g_talkers_ordered[i];
 						if (talkerName.ToLowercase() == voiceName) {
-							state.talker_id = g_talkers_ordered[i];
-							g_PlayerFuncs.SayText(plr, "Your voice has been set to " + state.talker_id + "\n");
+							chooseVoice(plr, g_talkers_ordered[i]);
 							return true;
 						}
 					}
