@@ -104,6 +104,7 @@ class PlayerState
 	float lastChatTime; // time this player last used a voice command
 	int lastPhraseId;
 	bool wasConnectedLastMap;
+	array<string> muteList;
 	
 	// sounds scheduled to be stopped (needs to be cleared when playing a new sound or else it stops early)
 	array<CScheduledFunction@> stopSchedules;
@@ -159,6 +160,8 @@ string plugin_path = 'scripts/plugins/voice_commands/';
 array<SOUND_CHANNEL> channels = {CHAN_STATIC, CHAN_STREAM, CHAN_VOICE};
 
 string g_previous_map;
+
+CConCommand _extMute( "vcmute_ext", "Mute from other plugin", @extMute ); // for muting from another plugin
 
 void print(string text) { g_Game.AlertMessage( at_console, "[VoiceCommands] " + text); }
 void println(string text) { print(text + "\n"); }
@@ -867,6 +870,8 @@ void voiceMenuCallback(CTextMenu@ menu, CBasePlayer@ plr, int page, const CTextM
 	}
 	float soundDuration = (phrase.duration + PACK_GAP*0.5f) * (1.0f / (state.pitch*0.01f));
 	
+	const string speakerSteamId = g_EngineFuncs.GetPlayerAuthId(plr.edict()).ToLowercase();
+	
 	for (uint i = 0; i < g_players.length(); i++)
 	{
 		if (g_players[i])
@@ -874,6 +879,11 @@ void voiceMenuCallback(CTextMenu@ menu, CBasePlayer@ plr, int page, const CTextM
 			CBaseEntity@ listener = g_players[i];
 			PlayerState@ listenerState = getPlayerState(cast<CBasePlayer@>(listener));
 			CBasePlayer@ speaker = global ? cast<CBasePlayer@>(listener) : plr;
+			
+			if (listenerState.muteList.find(speakerSteamId) != -1) {
+				continue;
+			}
+			
 			float listenVol = listenerState.volume*vol;
 			float attn = global ? ATTN_NONE : g_falloff.GetFloat();
 			if (listenVol <= 0)
@@ -1192,17 +1202,98 @@ bool doCommand(CBasePlayer@ plr, const CCommand@ args)
 				state.volume = float(newVol) / 100.0f;
 				return true;
 			}
+			if ( args[1] == "mute" ) {
+				if (args.ArgC() > 2) {
+					CBasePlayer@ target = getMuteTarget(plr, args[2]);
+					if (target is null) {
+						return true;
+					}
+					
+					const string steamId = g_EngineFuncs.GetPlayerAuthId(target.edict()).ToLowercase();
+					
+					if (state.muteList.find(steamId) == -1) {
+						state.muteList.insertLast(steamId);
+						g_PlayerFuncs.SayText(plr, "[VoiceCommands] muted player " + target.pev.netname + "\n");
+					} else {
+						g_PlayerFuncs.SayText(plr, "[VoiceCommands] unmuted player " + target.pev.netname + "\n");
+						state.muteList.removeAt(state.muteList.find(steamId));
+					}
+				} else {
+					state.muteList.resize(0);
+					g_PlayerFuncs.SayText(plr, "[VoiceCommands] unmuted everyone\n");
+				}
+				
+				return true;
+			}
 			
 			g_PlayerFuncs.SayText(plr, "Voice command usage:\n");
 			g_PlayerFuncs.SayText(plr, 'Say ".vc X" or ".vc global X" to open a command menu (where X = 1 or 2).\n');
 			g_PlayerFuncs.SayText(plr, 'Say ".vc voice" to open the voice menu or say ".vc voice X" to directly set your voice.\n');
 			g_PlayerFuncs.SayText(plr, 'Say ".vc pitch X" to change your voice pitch (where X = 1-255).\n');
 			g_PlayerFuncs.SayText(plr, 'Say ".vc vol X" to adjust all voice volumes (where X = 0-100).\n');
+			g_PlayerFuncs.SayText(plr, 'Say ".vc mute [name/id]" to mute a player. Say it again to unmute.\n');
 			g_PlayerFuncs.SayText(plr, 'Type ".vc stats" or ".vc stats <voice name>" in console to see usage statistics.\n');
 			return true;
 		}
 	}
 	return false;
+}
+
+CBasePlayer@ getMuteTarget(CBasePlayer@ caller, string name) {
+	name = name.ToLowercase();
+	int partialMatches = 0;
+	CBasePlayer@ partialMatch;
+	
+	for (int i = 1; i <= g_Engine.maxClients; i++) {
+		CBasePlayer@ plr = g_PlayerFuncs.FindPlayerByIndex(i);
+		
+		if (plr is null or !plr.IsConnected()) {
+			continue;
+		}
+		
+		const string steamId = g_EngineFuncs.GetPlayerAuthId(plr.edict()).ToLowercase();
+		
+		string plrName = string(plr.pev.netname).ToLowercase();
+		if (plrName == name || steamId == name)
+			return plr;
+		else if (plrName.Find(name) != uint(-1))
+		{
+			@partialMatch = plr;
+			partialMatches++;
+		}
+	}
+	
+	if (partialMatches == 1) {
+		return partialMatch;
+	} else if (partialMatches > 1) {
+		g_PlayerFuncs.ClientPrint(caller, HUD_PRINTTALK, '[VoiceCommands] Mute failed. There are ' + partialMatches + ' players that have "' + name + '" in their name. Be more specific.\n');
+	} else {
+		g_PlayerFuncs.ClientPrint(caller, HUD_PRINTTALK, '[VoiceCommands] Mute failed. There is no player named "' + name + '".\n');
+	}
+	
+	return null;
+}
+
+void extMute(const CCommand@ args) {
+	println("[Voicecommands] extmute " + args[1] + " " + args[2] + " " + args[3]);
+	CBasePlayer@ muter = g_PlayerFuncs.FindPlayerByIndex(atoi(args[1]));
+	string targetid = args[2].ToLowercase();
+	bool shouldMute = atoi(args[3]) != 0;
+	
+	PlayerState@ state = getPlayerState(muter);	
+	
+	if (shouldMute) {
+		if (state.muteList.find(targetid) == -1) {
+			state.muteList.insertLast(targetid);
+			
+			g_EngineFuncs.ServerCommand("stop_mic_sound " + muter.entindex() + " 0\n");
+			g_EngineFuncs.ServerExecute();
+		}
+	} else {
+		if (state.muteList.find(targetid) != -1) {
+			state.muteList.removeAt(state.muteList.find(targetid));
+		}
+	}
 }
 
 HookReturnCode ClientSay( SayParameters@ pParams )
