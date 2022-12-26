@@ -202,6 +202,9 @@ bool isCustomSound(string path) {
 
 void MapInit()
 {
+	for (uint i = 0; i < g_commands.length(); i++)
+		g_Game.PrecacheModel(g_commands[i].sprite);
+		
 	if (reload_next_map) {
 		loadDefaultSentences();
 		loadConfig();
@@ -261,9 +264,6 @@ void MapInit()
 	}
 	
 	total_precached_sounds = unique_sounds.size();
-		
-	for (uint i = 0; i < g_commands.length(); i++)
-		g_Game.PrecacheModel(g_commands[i].sprite);
 	
 	// Reset temporary vars on map change
 	array<string>@ states = player_states.getKeys();
@@ -300,6 +300,9 @@ void updatePrecachedVoices() {
 			}
 		
 			Talker@ talker = cast< Talker@ >(g_talkers[state.talker_id]);
+			if (talker is null) {
+				continue; // selected a vc that was removed
+			}
 			if (!talker.isPrecached) {
 				total_loaded_voices++;
 			}
