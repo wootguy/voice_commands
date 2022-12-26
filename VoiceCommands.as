@@ -228,7 +228,7 @@ void MapInit()
 			continue;
 		}
 		
-		Talker@ talker = cast< Talker@ >(g_all_phrases[i].talkerId);
+		Talker@ talker = cast< Talker@ >(g_talkers[g_all_phrases[i].talkerId]);
 		if (!talker.isPrecached) {
 			continue;
 		}
