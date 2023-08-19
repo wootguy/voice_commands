@@ -162,6 +162,7 @@ array<SOUND_CHANNEL> channels = {CHAN_STATIC, CHAN_STREAM, CHAN_VOICE};
 string g_previous_map;
 
 CConCommand _extMute( "vcmute_ext", "Mute from other plugin", @extMute ); // for muting from another plugin
+CConCommand _reloadSounds( "vcreload", "Reload sounds next map", @reloadSounds ); // for muting from another plugin
 
 void print(string text) { g_Game.AlertMessage( at_console, "[VoiceCommands] " + text); }
 void println(string text) { print(text + "\n"); }
@@ -1109,11 +1110,6 @@ bool doCommand(CBasePlayer@ plr, const CCommand@ args)
 	{
 		if ( args[0] == ".vc" )
 		{
-			if (args[1] == "reload") {
-				reload_next_map = true;
-				g_PlayerFuncs.SayText(plr, "sounds will be reloaded next map\n");
-				return true;
-			}
 			if (args[1] == "total") {
 				
 				g_PlayerFuncs.SayText(plr, "vc sounds precached: " + total_precached_sounds + "\n");
@@ -1297,6 +1293,12 @@ void extMute(const CCommand@ args) {
 			state.muteList.removeAt(state.muteList.find(targetid));
 		}
 	}
+}
+
+void reloadSounds(const CCommand@ args) {
+	reload_next_map = true;
+	g_PlayerFuncs.SayTextAll(null, "[Info] Voice commands will be updated next map.\n");
+	g_Log.PrintF("[VoiceCommands] Sounds will be reloaded next map\n");
 }
 
 HookReturnCode ClientSay( SayParameters@ pParams )
